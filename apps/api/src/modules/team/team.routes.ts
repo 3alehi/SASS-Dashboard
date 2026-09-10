@@ -1,35 +1,30 @@
-import type { FastifyPluginAsync } from 'fastify';
+import { inviteMemberSchema, teamMemberSchema, updateMemberRoleSchema } from '@nexora/shared';
+import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 
-import { supabaseAdmin } from '@/lib/supabase-admin.js';
 import { requirePermission } from '@/modules/rbac/require-permission.js';
+import {
+  deactivateMember,
+  inviteMember,
+  isLastActiveOwner,
+  listMembers,
+  reactivateMember,
+  removeMember,
+  updateMemberRole,
+} from '@/modules/team/team.repository.js';
 
 const paramsSchema = z.object({ organizationId: z.string().uuid() });
+const memberParamsSchema = paramsSchema.extend({ memberId: z.string().uuid() });
 
-const teamMemberSchema = z.object({
-  id: z.string().uuid(),
-  userId: z.string().uuid().nullable(),
-  fullName: z.string().nullable(),
-  email: z.string().nullable(),
-  role: z.string(),
-  status: z.string(),
-  joinedAt: z.string().nullable(),
+const teamListResponseSchema = z.object({ success: z.literal(true), data: z.array(teamMemberSchema) });
+const teamMemberResponseSchema = z.object({ success: z.literal(true), data: teamMemberSchema });
+const okResponseSchema = z.object({ success: z.literal(true), data: z.object({ ok: z.literal(true) }) });
+const errorResponseSchema = z.object({
+  success: z.literal(false),
+  error: z.object({ code: z.string(), message: z.string() }),
 });
 
-const teamResponseSchema = z.object({
-  success: z.literal(true),
-  data: z.array(teamMemberSchema),
-});
-
-/**
- * GET /api/v1/organizations/:organizationId/team
- *
- * Demonstrates the RBAC enforcement pattern every future module route
- * follows: authenticate -> requirePermission(the specific permission this
- * action needs) -> handler. team.manage is required to view the roster so
- * this endpoint doubles as the reference implementation for Phase 11.
- */
-export const teamRoutes: FastifyPluginAsync = async (app) => {
+export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get(
     '/organizations/:organizationId/team',
     {
@@ -38,40 +33,180 @@ export const teamRoutes: FastifyPluginAsync = async (app) => {
         tags: ['team'],
         summary: 'List organization members',
         params: paramsSchema,
-        response: { 200: teamResponseSchema },
+        response: { 200: teamListResponseSchema },
       },
     },
     async (request) => {
-      const { organizationId } = request.params as z.infer<typeof paramsSchema>;
+      const { organizationId } = request.params;
+      const members = await listMembers(organizationId);
+      return { success: true as const, data: members };
+    },
+  );
 
-      const { data, error } = await supabaseAdmin
-        .from('organization_members')
-        .select(
-          'id, user_id, invited_email, status, joined_at, roles!inner(name), profiles(full_name)',
-        )
-        .eq('organization_id', organizationId);
+  app.post(
+    '/organizations/:organizationId/team/invite',
+    {
+      preHandler: [app.authenticate, requirePermission('team.manage')],
+      schema: {
+        tags: ['team'],
+        summary: 'Invite a new team member by email (sends a real invitation via Supabase Auth)',
+        params: paramsSchema,
+        body: inviteMemberSchema,
+        response: { 201: teamMemberResponseSchema, 400: errorResponseSchema },
+      },
+    },
+    async (request, reply) => {
+      const { organizationId } = request.params;
+      const { email, role } = request.body;
 
-      if (error || !data) {
-        return { success: true, data: [] };
+      const { member, error } = await inviteMember(organizationId, request.user.id, email, role);
+
+      if (!member) {
+        return reply.code(400).send({
+          success: false as const,
+          error: { code: 'INVITE_FAILED', message: error ?? 'Could not invite member.' },
+        });
       }
 
-      return {
-        success: true,
-        data: data.map((row) => {
-          const role = Array.isArray(row.roles) ? row.roles[0] : row.roles;
-          const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
+      return reply.code(201).send({ success: true as const, data: member });
+    },
+  );
 
-          return {
-            id: row.id as string,
-            userId: row.user_id as string | null,
-            fullName: (profile as { full_name: string } | null)?.full_name ?? null,
-            email: row.invited_email as string | null,
-            role: (role as { name: string } | null)?.name ?? '',
-            status: row.status as string,
-            joinedAt: row.joined_at as string | null,
-          };
-        }),
-      };
+  app.patch(
+    '/organizations/:organizationId/team/:memberId/role',
+    {
+      preHandler: [app.authenticate, requirePermission('team.manage')],
+      schema: {
+        tags: ['team'],
+        summary: "Change a member's role (OWNER is not assignable through this endpoint)",
+        params: memberParamsSchema,
+        body: updateMemberRoleSchema,
+        response: { 200: teamMemberResponseSchema, 400: errorResponseSchema, 404: errorResponseSchema },
+      },
+    },
+    async (request, reply) => {
+      const { organizationId, memberId } = request.params;
+
+      if (await isLastActiveOwner(organizationId, memberId)) {
+        return reply.code(400).send({
+          success: false as const,
+          error: {
+            code: 'LAST_OWNER',
+            message: "This organization's only owner cannot be demoted.",
+          },
+        });
+      }
+
+      const member = await updateMemberRole(organizationId, memberId, request.body.role);
+
+      if (!member) {
+        return reply.code(404).send({
+          success: false as const,
+          error: { code: 'NOT_FOUND', message: 'Member not found.' },
+        });
+      }
+
+      return { success: true as const, data: member };
+    },
+  );
+
+  app.post(
+    '/organizations/:organizationId/team/:memberId/deactivate',
+    {
+      preHandler: [app.authenticate, requirePermission('team.manage')],
+      schema: {
+        tags: ['team'],
+        summary: 'Deactivate a team member (revokes access without deleting their history)',
+        params: memberParamsSchema,
+        response: { 200: okResponseSchema, 400: errorResponseSchema, 404: errorResponseSchema },
+      },
+    },
+    async (request, reply) => {
+      const { organizationId, memberId } = request.params;
+
+      if (await isLastActiveOwner(organizationId, memberId)) {
+        return reply.code(400).send({
+          success: false as const,
+          error: {
+            code: 'LAST_OWNER',
+            message: "This organization's only owner cannot be deactivated.",
+          },
+        });
+      }
+
+      const ok = await deactivateMember(organizationId, memberId);
+
+      if (!ok) {
+        return reply.code(404).send({
+          success: false as const,
+          error: { code: 'NOT_FOUND', message: 'Member not found.' },
+        });
+      }
+
+      return { success: true as const, data: { ok: true as const } };
+    },
+  );
+
+  app.post(
+    '/organizations/:organizationId/team/:memberId/reactivate',
+    {
+      preHandler: [app.authenticate, requirePermission('team.manage')],
+      schema: {
+        tags: ['team'],
+        summary: 'Reactivate a deactivated team member',
+        params: memberParamsSchema,
+        response: { 200: okResponseSchema, 404: errorResponseSchema },
+      },
+    },
+    async (request, reply) => {
+      const { organizationId, memberId } = request.params;
+      const ok = await reactivateMember(organizationId, memberId);
+
+      if (!ok) {
+        return reply.code(404).send({
+          success: false as const,
+          error: { code: 'NOT_FOUND', message: 'Member not found.' },
+        });
+      }
+
+      return { success: true as const, data: { ok: true as const } };
+    },
+  );
+
+  app.delete(
+    '/organizations/:organizationId/team/:memberId',
+    {
+      preHandler: [app.authenticate, requirePermission('team.manage')],
+      schema: {
+        tags: ['team'],
+        summary: 'Remove a team member from the organization',
+        params: memberParamsSchema,
+        response: { 200: okResponseSchema, 400: errorResponseSchema, 404: errorResponseSchema },
+      },
+    },
+    async (request, reply) => {
+      const { organizationId, memberId } = request.params;
+
+      if (await isLastActiveOwner(organizationId, memberId)) {
+        return reply.code(400).send({
+          success: false as const,
+          error: {
+            code: 'LAST_OWNER',
+            message: "This organization's only owner cannot be removed.",
+          },
+        });
+      }
+
+      const ok = await removeMember(organizationId, memberId);
+
+      if (!ok) {
+        return reply.code(404).send({
+          success: false as const,
+          error: { code: 'NOT_FOUND', message: 'Member not found.' },
+        });
+      }
+
+      return { success: true as const, data: { ok: true as const } };
     },
   );
 };
