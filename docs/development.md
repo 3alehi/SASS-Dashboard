@@ -7,7 +7,7 @@ and committed before the next one starts. Branching follows Git Flow:
 | #   | Phase                               | Status     |
 | --- | ----------------------------------- | ---------- |
 | 1   | Repository + architecture + tooling | ✅ Done    |
-| 2   | Design system + application shell   | ⏳ Planned |
+| 2   | Design system + application shell   | ✅ Done    |
 | 3   | Supabase + database + RLS           | ⏳ Planned |
 | 4   | Authentication                      | ⏳ Planned |
 | 5   | RBAC                                | ⏳ Planned |
