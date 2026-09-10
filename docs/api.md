@@ -45,7 +45,8 @@ apps/api/src/
 │   ├── leads/                   # CRUD + lead conversion workflow (calls the convert_lead() SQL function)
 │   ├── pipelines/                # read-only: pipelines + ordered stages
 │   ├── deals/                     # CRUD + move (Kanban drag-and-drop) + pipeline summary metrics
-│   └── tasks/                      # CRUD + comments + unpaginated /board endpoint
+│   ├── tasks/                      # CRUD + comments + unpaginated /board endpoint
+│   └── tickets/                     # CRUD + threaded conversation with internal notes
 ```
 
 Each future module (customers, leads, deals, …) follows the `team` module's shape: a
@@ -88,6 +89,13 @@ preHandlers and a Zod schema for the response.
 | DELETE | `/api/v1/organizations/:organizationId/tasks/:taskId`                 | required | `tasks.delete`                      | Soft-delete — sets `deleted_at`                                                                                                   |
 | GET    | `/api/v1/organizations/:organizationId/tasks/:taskId/comments`        | required | `tasks.read`                        | List comments on a task                                                                                                           |
 | POST   | `/api/v1/organizations/:organizationId/tasks/:taskId/comments`        | required | `tasks.update`                      | Add a comment to a task                                                                                                           |
+| GET    | `/api/v1/organizations/:organizationId/tickets`                       | required | `tickets.read`                      | Paginated, searchable, filterable, sortable list                                                                                  |
+| GET    | `/api/v1/organizations/:organizationId/tickets/:ticketId`             | required | `tickets.read`                      | Single ticket                                                                                                                     |
+| POST   | `/api/v1/organizations/:organizationId/tickets`                       | required | `tickets.create`                    | Create a ticket                                                                                                                   |
+| PATCH  | `/api/v1/organizations/:organizationId/tickets/:ticketId`             | required | `tickets.update`                    | Partial update — status → RESOLVED/CLOSED stamps the matching timestamp                                                           |
+| DELETE | `/api/v1/organizations/:organizationId/tickets/:ticketId`             | required | `tickets.delete`                    | Soft-delete — sets `deleted_at`                                                                                                   |
+| GET    | `/api/v1/organizations/:organizationId/tickets/:ticketId/messages`    | required | `tickets.read`                      | List the conversation, including internal notes (staff-only surface)                                                              |
+| POST   | `/api/v1/organizations/:organizationId/tickets/:ticketId/messages`    | required | `tickets.update`                    | Reply, or add an internal note with `isInternal: true`                                                                            |
 
 ## Adding a protected route
 

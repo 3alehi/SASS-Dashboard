@@ -71,7 +71,10 @@ describe('createTicketMessageSchema', () => {
   });
 
   it('accepts an internal note', () => {
-    const result = createTicketMessageSchema.safeParse({ body: 'Escalating to engineering.', isInternal: true });
+    const result = createTicketMessageSchema.safeParse({
+      body: 'Escalating to engineering.',
+      isInternal: true,
+    });
     expect(result.success).toBe(true);
   });
 });

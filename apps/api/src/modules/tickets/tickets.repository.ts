@@ -50,8 +50,7 @@ function toTicket(row: TicketRow): Ticket {
   };
 }
 
-const SELECT_COLUMNS =
-  '*, customers(name), profiles!tickets_assigned_agent_id_fkey(full_name)';
+const SELECT_COLUMNS = '*, customers(name), profiles!tickets_assigned_agent_id_fkey(full_name)';
 
 const SORT_COLUMN_MAP: Record<TicketListQuery['sortBy'], string> = {
   ticketNumber: 'ticket_number',
@@ -118,7 +117,10 @@ export async function listTickets(
   };
 }
 
-export async function getTicketById(organizationId: string, ticketId: string): Promise<Ticket | null> {
+export async function getTicketById(
+  organizationId: string,
+  ticketId: string,
+): Promise<Ticket | null> {
   const { data, error } = await supabaseAdmin
     .from('tickets')
     .select(SELECT_COLUMNS)
@@ -174,7 +176,8 @@ export async function updateTicket(
   if (normalized.customerId !== undefined) patch.customer_id = normalized.customerId ?? null;
   if (normalized.priority !== undefined) patch.priority = normalized.priority;
   if (normalized.category !== undefined) patch.category = normalized.category ?? null;
-  if (normalized.assignedAgentId !== undefined) patch.assigned_agent_id = normalized.assignedAgentId ?? null;
+  if (normalized.assignedAgentId !== undefined)
+    patch.assigned_agent_id = normalized.assignedAgentId ?? null;
 
   if (normalized.status !== undefined) {
     patch.status = normalized.status;

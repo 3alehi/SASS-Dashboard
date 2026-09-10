@@ -36,6 +36,11 @@ write another organization's data. This is enforced with defense in depth:
   relationship).
 - **`audit_logs` is effectively append-only** — no UPDATE or DELETE policy is granted to any role,
   so once an audit entry is written it cannot be altered or removed via the API or PostgREST.
+- **Ticket internal notes have no separate access control** — `ticket_messages.is_internal` is
+  visible to anyone with `tickets.read`, which today means staff only (no customer-facing portal
+  exists). If a customer-facing ticket view is ever built, that surface must explicitly filter
+  `is_internal = false` in its own query rather than relying on this table's default visibility —
+  see the comment in `apps/api/src/modules/tickets/ticket-messages.repository.ts`.
 
 ## Planned application-layer protections (Phase 4/5/20)
 

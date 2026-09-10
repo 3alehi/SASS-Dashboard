@@ -41,7 +41,10 @@ const messageListResponseSchema = z.object({
   data: z.array(ticketMessageSchema),
 });
 const messageResponseSchema = z.object({ success: z.literal(true), data: ticketMessageSchema });
-const okResponseSchema = z.object({ success: z.literal(true), data: z.object({ ok: z.literal(true) }) });
+const okResponseSchema = z.object({
+  success: z.literal(true),
+  data: z.object({ ok: z.literal(true) }),
+});
 const notFoundResponseSchema = z.object({
   success: z.literal(false),
   error: z.object({ code: z.string(), message: z.string() }),
