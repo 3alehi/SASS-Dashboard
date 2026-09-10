@@ -1,0 +1,9 @@
+process.env.NODE_ENV ??= 'test';
+process.env.API_PORT ??= '4000';
+process.env.API_HOST ??= '0.0.0.0';
+process.env.API_CORS_ORIGIN ??= 'http://localhost:5173';
+process.env.SUPABASE_URL ??= 'https://test-project.supabase.co';
+process.env.SUPABASE_ANON_KEY ??= 'test-anon-key';
+process.env.SUPABASE_SERVICE_ROLE_KEY ??= 'test-service-role-key';
+process.env.JWT_SECRET ??= 'test-jwt-secret';
+process.env.LOG_LEVEL ??= 'silent';
