@@ -4,6 +4,7 @@ import rateLimit from '@fastify/rate-limit';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import Fastify from 'fastify';
+import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
   jsonSchemaTransform,
   serializerCompiler,
@@ -11,6 +12,7 @@ import {
 } from 'fastify-type-provider-zod';
 
 import { env } from '@/config/env.js';
+import { customersRoutes } from '@/modules/customers/customers.routes.js';
 import { healthRoutes } from '@/modules/health/health.routes.js';
 import { meRoutes } from '@/modules/me/me.routes.js';
 import { teamRoutes } from '@/modules/team/team.routes.js';
@@ -24,7 +26,7 @@ export async function buildApp() {
       transport: env.NODE_ENV === 'development' ? { target: 'pino-pretty' } : undefined,
       redact: ['req.headers.authorization', 'req.headers.cookie'],
     },
-  }).withTypeProvider();
+  }).withTypeProvider<ZodTypeProvider>();
 
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
@@ -63,6 +65,7 @@ export async function buildApp() {
       await v1.register(healthRoutes);
       await v1.register(meRoutes);
       await v1.register(teamRoutes);
+      await v1.register(customersRoutes);
     },
     { prefix: '/api/v1' },
   );

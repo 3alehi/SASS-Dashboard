@@ -11,7 +11,7 @@ and committed before the next one starts. Branching follows Git Flow:
 | 3   | Supabase + database + RLS           | ✅ Done    |
 | 4   | Authentication                      | ✅ Done    |
 | 5   | RBAC                                | ✅ Done    |
-| 6   | Customers                           | ⏳ Planned |
+| 6   | Customers                           | ✅ Done    |
 | 7   | Leads                               | ⏳ Planned |
 | 8   | Deals + pipeline                    | ⏳ Planned |
 | 9   | Tasks                               | ⏳ Planned |
