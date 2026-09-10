@@ -20,6 +20,7 @@ import { meRoutes } from '@/modules/me/me.routes.js';
 import { pipelinesRoutes } from '@/modules/pipelines/pipelines.routes.js';
 import { tasksRoutes } from '@/modules/tasks/tasks.routes.js';
 import { teamRoutes } from '@/modules/team/team.routes.js';
+import { ticketsRoutes } from '@/modules/tickets/tickets.routes.js';
 import authenticatePlugin from '@/plugins/authenticate.js';
 import errorHandlerPlugin from '@/plugins/error-handler.js';
 
@@ -74,6 +75,7 @@ export async function buildApp() {
       await v1.register(pipelinesRoutes);
       await v1.register(dealsRoutes);
       await v1.register(tasksRoutes);
+      await v1.register(ticketsRoutes);
     },
     { prefix: '/api/v1' },
   );
