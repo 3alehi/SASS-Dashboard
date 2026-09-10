@@ -16,6 +16,9 @@ interface UiState {
 
   commandPaletteOpen: boolean;
   setCommandPaletteOpen: (open: boolean) => void;
+
+  activeOrganizationId: string | null;
+  setActiveOrganizationId: (organizationId: string | null) => void;
 }
 
 export const useUiStore = create<UiState>()(
@@ -33,10 +36,17 @@ export const useUiStore = create<UiState>()(
 
       commandPaletteOpen: false,
       setCommandPaletteOpen: (open) => set({ commandPaletteOpen: open }),
+
+      activeOrganizationId: null,
+      setActiveOrganizationId: (organizationId) => set({ activeOrganizationId: organizationId }),
     }),
     {
       name: 'nexora-ui',
-      partialize: (state) => ({ theme: state.theme, sidebarCollapsed: state.sidebarCollapsed }),
+      partialize: (state) => ({
+        theme: state.theme,
+        sidebarCollapsed: state.sidebarCollapsed,
+        activeOrganizationId: state.activeOrganizationId,
+      }),
     },
   ),
 );

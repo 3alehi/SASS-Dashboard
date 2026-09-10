@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 
 import { GuestRoute } from '@/components/auth/guest-route';
+import { PermissionRoute } from '@/components/auth/permission-route';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { AppLayout } from '@/components/layout/app-layout';
 import { AuditLogsPage } from '@/pages/audit-logs-page';
@@ -91,18 +92,60 @@ export const router = createBrowserRouter([
       { path: 'tasks', element: <TasksPage /> },
       { path: 'tickets', element: <TicketsPage /> },
       { path: 'tickets/:id', element: <TicketDetailPage /> },
-      { path: 'reports', element: <ReportsPage /> },
-      { path: 'team', element: <TeamPage /> },
-      { path: 'audit-logs', element: <AuditLogsPage /> },
+      {
+        path: 'reports',
+        element: (
+          <PermissionRoute permission="reports.read">
+            <ReportsPage />
+          </PermissionRoute>
+        ),
+      },
+      {
+        path: 'team',
+        element: (
+          <PermissionRoute permission="team.manage">
+            <TeamPage />
+          </PermissionRoute>
+        ),
+      },
+      {
+        path: 'audit-logs',
+        element: (
+          <PermissionRoute permission="settings.manage">
+            <AuditLogsPage />
+          </PermissionRoute>
+        ),
+      },
       {
         path: 'settings',
         element: <SettingsLayout />,
         children: [
           { index: true, element: <ProfileSettingsPage /> },
           { path: 'profile', element: <ProfileSettingsPage /> },
-          { path: 'organization', element: <OrganizationSettingsPage /> },
-          { path: 'team', element: <TeamSettingsPage /> },
-          { path: 'roles', element: <RolesSettingsPage /> },
+          {
+            path: 'organization',
+            element: (
+              <PermissionRoute permission="settings.manage">
+                <OrganizationSettingsPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: 'team',
+            element: (
+              <PermissionRoute permission="team.manage">
+                <TeamSettingsPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: 'roles',
+            element: (
+              <PermissionRoute permission="settings.manage">
+                <RolesSettingsPage />
+              </PermissionRoute>
+            ),
+          },
           { path: 'notifications', element: <NotificationsSettingsPage /> },
           { path: 'appearance', element: <AppearanceSettingsPage /> },
           { path: 'security', element: <SecuritySettingsPage /> },

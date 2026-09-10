@@ -1,11 +1,8 @@
 # Authorization
 
-NEXORA uses role-based access control (RBAC) enforced at two layers: the database (Row Level
-Security) and the API (permission checks on every mutating route). The frontend only uses
-permission data to hide/disable UI — it is never the source of truth.
-
-> Full RBAC middleware and frontend permission hooks land in Phase 5. This document describes the
-> data model that phase builds on, established in Phase 3.
+NEXORA uses role-based access control (RBAC) enforced at three independent layers: PostgreSQL Row
+Level Security, the Fastify API, and the frontend. Only the first two are security boundaries —
+the frontend layer exists purely to hide/disable UI a user couldn't use anyway.
 
 ## Roles
 
@@ -42,13 +39,29 @@ code — it can be inspected or extended with plain SQL.
    `has_permission(organization_id, 'resource.action')`. Even a request that bypassed the API
    entirely (e.g. a leaked anon key used directly against PostgREST) cannot write data the
    caller's role doesn't permit. See [`0012_row_level_security.sql`](../database/migrations/0012_row_level_security.sql).
-2. **API.** Fastify route handlers re-check permissions server-side before executing a mutation
-   (Phase 5). This is defense in depth, not the primary boundary — RLS is.
-3. **Frontend.** UI hides or disables actions the current user's role doesn't permit (Phase 5).
-   This is a UX affordance only; it is never trusted for security.
+
+2. **API.** Every protected route composes two preHandlers:
+   `[app.authenticate, requirePermission('resource.action')]`
+   ([`require-permission.ts`](../apps/api/src/modules/rbac/require-permission.ts)).
+   `authenticate` verifies the Supabase JWT and attaches `request.user`; `requirePermission`
+   resolves `organization_id` **only from the route param**, looks up the caller's ACTIVE
+   membership and role in that organization directly from `organization_members`/`role_permissions`
+   (bypassing RLS via the service-role client, since the API is the trusted party doing its own
+   authorization here), and returns 403 if the permission isn't granted. This is independent
+   enforcement, not a convenience wrapper around RLS — a bug in one layer doesn't compromise the
+   other.
+
+3. **Frontend.** `GET /api/v1/me` returns the caller's organizations with their resolved role and
+   permission list, fetched once via `useMe()`/`usePermissions()`
+   ([`use-permissions.ts`](../apps/web/src/hooks/use-permissions.ts)). The `<Can>` component and
+   `<PermissionRoute>` guard use this to hide nav items, disable actions, and redirect to `/403`
+   for pages the user's role doesn't grant — purely a UX affordance. A user who edits Zustand
+   state or intercepts network requests to force `hasPermission()` to return `true` gains nothing:
+   the API and RLS re-check independently on every request.
 
 ## Organization membership is never client-supplied
 
-`organization_id` is resolved server-side from `organization_members` for the authenticated user
-(`auth.uid()`), never accepted as a raw value from request bodies or query params for
-authorization decisions. See [security.md](./security.md).
+`organization_id` is resolved server-side from `organization_members` for the authenticated user,
+never accepted as a raw value from request bodies or query params for authorization decisions —
+only from the route path, which `requirePermission` then verifies against real membership before
+trusting it for anything. See [security.md](./security.md).
