@@ -4,6 +4,7 @@ import { NavLink } from 'react-router-dom';
 import { OrgSwitcher } from '@/components/layout/org-switcher';
 import { UserMenu } from '@/components/layout/user-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { usePermissions } from '@/hooks/use-permissions';
 import { NAV_SECTIONS } from '@/lib/nav-config';
 import { cn } from '@/lib/utils';
 import { useUiStore } from '@/stores/ui-store';
@@ -11,6 +12,12 @@ import { useUiStore } from '@/stores/ui-store';
 export function Sidebar() {
   const collapsed = useUiStore((state) => state.sidebarCollapsed);
   const toggleSidebar = useUiStore((state) => state.toggleSidebar);
+  const { hasPermission } = usePermissions();
+
+  const visibleSections = NAV_SECTIONS.map((section) => ({
+    ...section,
+    items: section.items.filter((item) => !item.permission || hasPermission(item.permission)),
+  })).filter((section) => section.items.length > 0);
 
   return (
     <aside
@@ -33,7 +40,7 @@ export function Sidebar() {
       )}
 
       <nav className="flex-1 overflow-y-auto px-2 py-4">
-        {NAV_SECTIONS.map((section) => (
+        {visibleSections.map((section) => (
           <div key={section.label} className="mb-4">
             {!collapsed && (
               <p className="mb-1.5 px-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">

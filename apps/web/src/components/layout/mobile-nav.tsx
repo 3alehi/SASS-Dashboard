@@ -4,6 +4,7 @@ import { NavLink } from 'react-router-dom';
 
 import { OrgSwitcher } from '@/components/layout/org-switcher';
 import { UserMenu } from '@/components/layout/user-menu';
+import { usePermissions } from '@/hooks/use-permissions';
 import { NAV_SECTIONS } from '@/lib/nav-config';
 import { cn } from '@/lib/utils';
 import { useUiStore } from '@/stores/ui-store';
@@ -11,6 +12,12 @@ import { useUiStore } from '@/stores/ui-store';
 export function MobileNav() {
   const open = useUiStore((state) => state.mobileNavOpen);
   const setOpen = useUiStore((state) => state.setMobileNavOpen);
+  const { hasPermission } = usePermissions();
+
+  const visibleSections = NAV_SECTIONS.map((section) => ({
+    ...section,
+    items: section.items.filter((item) => !item.permission || hasPermission(item.permission)),
+  })).filter((section) => section.items.length > 0);
 
   return (
     <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
@@ -38,7 +45,7 @@ export function MobileNav() {
           </div>
 
           <nav className="flex-1 overflow-y-auto px-2 py-4">
-            {NAV_SECTIONS.map((section) => (
+            {visibleSections.map((section) => (
               <div key={section.label} className="mb-4">
                 <p className="mb-1.5 px-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   {section.label}

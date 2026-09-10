@@ -1,3 +1,4 @@
+import type { Permission } from '@nexora/shared';
 import type { LucideIcon } from 'lucide-react';
 import {
   BarChart3,
@@ -18,6 +19,8 @@ export interface NavItem {
   label: string;
   href: string;
   icon: LucideIcon;
+  /** If set, this item is hidden unless the user holds this permission. */
+  permission?: Permission;
 }
 
 export interface NavSection {
@@ -48,13 +51,20 @@ export const NAV_SECTIONS: NavSection[] = [
   },
   {
     label: 'Analytics',
-    items: [{ label: 'Reports', href: '/app/reports', icon: BarChart3 }],
+    items: [
+      { label: 'Reports', href: '/app/reports', icon: BarChart3, permission: 'reports.read' },
+    ],
   },
   {
     label: 'Workspace',
     items: [
-      { label: 'Team', href: '/app/team', icon: Users },
-      { label: 'Audit Logs', href: '/app/audit-logs', icon: ScrollText },
+      { label: 'Team', href: '/app/team', icon: Users, permission: 'team.manage' },
+      {
+        label: 'Audit Logs',
+        href: '/app/audit-logs',
+        icon: ScrollText,
+        permission: 'settings.manage',
+      },
       { label: 'Settings', href: '/app/settings', icon: Settings },
     ],
   },
