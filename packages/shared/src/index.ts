@@ -7,3 +7,4 @@ export * from './schemas/pipeline.js';
 export * from './schemas/deal.js';
 export * from './schemas/task.js';
 export * from './schemas/ticket.js';
+export * from './schemas/team.js';
