@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { convertLeadSchema, createLeadSchema, leadListQuerySchema, updateLeadSchema } from './lead.js';
+import {
+  convertLeadSchema,
+  createLeadSchema,
+  leadListQuerySchema,
+  updateLeadSchema,
+} from './lead.js';
 
 describe('createLeadSchema', () => {
   it('accepts a minimal valid payload', () => {

@@ -58,13 +58,13 @@ const SORT_COLUMN_MAP: Record<LeadListQuery['sortBy'], string> = {
 };
 
 /**
- * No in-memory caching here on purpose: the API may run as multiple
- * serverless invocations with no shared memory (see docs/deployment.md), so
- * a process-local cache for lead_sources — which grows dynamically as users
- * type new source names — could silently serve stale or duplicate-creating
- * data on a different instance. lead_statuses is small and static, but is
- * looked up the same simple way for consistency and to avoid a second cache
- * invalidation story later.
+ * No in-memory caching here on purpose: the API is intended to run on
+ * Vercel as serverless functions with no shared memory across invocations,
+ * so a process-local cache for lead_sources — which grows dynamically as
+ * users type new source names — could silently serve stale or
+ * duplicate-creating data on a different instance. lead_statuses is small
+ * and static, but is looked up the same simple way for consistency and to
+ * avoid a second cache invalidation story later.
  */
 async function getStatusId(name: string): Promise<number> {
   const { data, error } = await supabaseAdmin
@@ -99,7 +99,10 @@ export interface PaginatedLeads {
   total: number;
 }
 
-export async function listLeads(organizationId: string, query: LeadListQuery): Promise<PaginatedLeads> {
+export async function listLeads(
+  organizationId: string,
+  query: LeadListQuery,
+): Promise<PaginatedLeads> {
   const from = (query.page - 1) * query.pageSize;
   const to = from + query.pageSize - 1;
 

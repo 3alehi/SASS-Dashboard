@@ -18,7 +18,10 @@ describe('leads routes', () => {
   });
 
   it('GET .../leads requires authentication', async () => {
-    const response = await app.inject({ method: 'GET', url: `/api/v1/organizations/${orgId}/leads` });
+    const response = await app.inject({
+      method: 'GET',
+      url: `/api/v1/organizations/${orgId}/leads`,
+    });
     expect(response.statusCode).toBe(401);
   });
 

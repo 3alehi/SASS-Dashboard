@@ -33,7 +33,10 @@ const leadListResponseSchema = z.object({
     totalPages: z.number(),
   }),
 });
-const okResponseSchema = z.object({ success: z.literal(true), data: z.object({ ok: z.literal(true) }) });
+const okResponseSchema = z.object({
+  success: z.literal(true),
+  data: z.object({ ok: z.literal(true) }),
+});
 const convertResponseSchema = z.object({ success: z.literal(true), data: convertLeadResultSchema });
 const notFoundResponseSchema = z.object({
   success: z.literal(false),
@@ -173,10 +176,7 @@ export const leadsRoutes: FastifyPluginAsyncZod = async (app) => {
   app.post(
     '/organizations/:organizationId/leads/:leadId/convert',
     {
-      preHandler: [
-        app.authenticate,
-        requireAllPermissions(['leads.update', 'customers.create']),
-      ],
+      preHandler: [app.authenticate, requireAllPermissions(['leads.update', 'customers.create'])],
       schema: {
         tags: ['leads'],
         summary:

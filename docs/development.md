@@ -12,7 +12,7 @@ and committed before the next one starts. Branching follows Git Flow:
 | 4   | Authentication                      | ✅ Done    |
 | 5   | RBAC                                | ✅ Done    |
 | 6   | Customers                           | ✅ Done    |
-| 7   | Leads                               | ⏳ Planned |
+| 7   | Leads                               | ✅ Done    |
 | 8   | Deals + pipeline                    | ⏳ Planned |
 | 9   | Tasks                               | ⏳ Planned |
 | 10  | Tickets                             | ⏳ Planned |
