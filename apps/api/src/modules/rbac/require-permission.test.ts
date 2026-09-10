@@ -2,7 +2,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import * as rbacRepository from '@/modules/rbac/rbac.repository.js';
-import { requirePermission } from '@/modules/rbac/require-permission.js';
+import { requireAllPermissions, requirePermission } from '@/modules/rbac/require-permission.js';
 
 function mockReply() {
   const reply = {
@@ -87,5 +87,67 @@ describe('requirePermission', () => {
       roleId: 1,
       roleName: 'OWNER',
     });
+  });
+});
+
+describe('requireAllPermissions', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('returns 403 when only some of the required permissions are granted', async () => {
+    vi.spyOn(rbacRepository, 'getMembership').mockResolvedValue({
+      organizationId: 'org-1',
+      roleId: 4,
+      roleName: 'SALES',
+      status: 'ACTIVE',
+    });
+    vi.spyOn(rbacRepository, 'getRolePermissions').mockResolvedValue(new Set(['leads.update']));
+
+    const handler = requireAllPermissions(['leads.update', 'customers.create']);
+    const request = mockRequest();
+    const reply = mockReply();
+
+    await handler(request, reply);
+
+    expect(reply.code).toHaveBeenCalledWith(403);
+  });
+
+  it('grants access and attaches membership when every permission is present', async () => {
+    vi.spyOn(rbacRepository, 'getMembership').mockResolvedValue({
+      organizationId: 'org-1',
+      roleId: 4,
+      roleName: 'SALES',
+      status: 'ACTIVE',
+    });
+    vi.spyOn(rbacRepository, 'getRolePermissions').mockResolvedValue(
+      new Set(['leads.update', 'customers.create']),
+    );
+
+    const handler = requireAllPermissions(['leads.update', 'customers.create']);
+    const request = mockRequest();
+    const reply = mockReply();
+
+    await handler(request, reply);
+
+    expect(reply.code).not.toHaveBeenCalled();
+    expect(request.membership?.organizationId).toBe('org-1');
+  });
+
+  it('makes only one membership lookup for multiple required permissions', async () => {
+    const getMembershipSpy = vi.spyOn(rbacRepository, 'getMembership').mockResolvedValue({
+      organizationId: 'org-1',
+      roleId: 1,
+      roleName: 'OWNER',
+      status: 'ACTIVE',
+    });
+    vi.spyOn(rbacRepository, 'getRolePermissions').mockResolvedValue(
+      new Set(['leads.update', 'customers.create']),
+    );
+
+    const handler = requireAllPermissions(['leads.update', 'customers.create']);
+    await handler(mockRequest(), mockReply());
+
+    expect(getMembershipSpy).toHaveBeenCalledTimes(1);
   });
 });

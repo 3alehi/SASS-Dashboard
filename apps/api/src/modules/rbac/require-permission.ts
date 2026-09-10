@@ -27,7 +27,19 @@ declare module 'fastify' {
  * would still be blocked at the database layer, and vice versa.
  */
 export function requirePermission(permission: Permission) {
-  return async function requirePermissionHandler(request: FastifyRequest, reply: FastifyReply) {
+  return requireAllPermissions([permission]);
+}
+
+/**
+ * Same as requirePermission, but grants access only if the caller holds
+ * every permission listed. Use this — rather than chaining multiple
+ * requirePermission() preHandlers — for routes that need more than one
+ * permission (e.g. lead conversion, which both updates the lead and creates
+ * a customer): a single membership/permission lookup instead of one per
+ * permission checked.
+ */
+export function requireAllPermissions(permissions: Permission[]) {
+  return async function requireAllPermissionsHandler(request: FastifyRequest, reply: FastifyReply) {
     const organizationId = (request.params as Record<string, string> | undefined)?.organizationId;
 
     if (!organizationId) {
@@ -46,14 +58,15 @@ export function requirePermission(permission: Permission) {
       });
     }
 
-    const permissions = await getRolePermissions(membership.roleId);
+    const granted = await getRolePermissions(membership.roleId);
+    const missing = permissions.filter((permission) => !granted.has(permission));
 
-    if (!permissions.has(permission)) {
+    if (missing.length > 0) {
       return reply.code(403).send({
         success: false,
         error: {
           code: 'FORBIDDEN',
-          message: `Missing required permission: ${permission}`,
+          message: `Missing required permission${missing.length > 1 ? 's' : ''}: ${missing.join(', ')}`,
         },
       });
     }
