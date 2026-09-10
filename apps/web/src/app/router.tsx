@@ -4,9 +4,11 @@ import { GuestRoute } from '@/components/auth/guest-route';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { AppLayout } from '@/components/layout/app-layout';
 import { AuditLogsPage } from '@/pages/audit-logs-page';
+import { AuthCallbackPage } from '@/pages/auth/auth-callback-page';
 import { ForgotPasswordPage } from '@/pages/auth/forgot-password-page';
 import { LoginPage } from '@/pages/auth/login-page';
 import { RegisterPage } from '@/pages/auth/register-page';
+import { ResetPasswordPage } from '@/pages/auth/reset-password-page';
 import { CustomerDetailPage } from '@/pages/customer-detail-page';
 import { CustomersPage } from '@/pages/customers-page';
 import { DashboardPage } from '@/pages/dashboard-page';
@@ -60,6 +62,14 @@ export const router = createBrowserRouter([
         <ForgotPasswordPage />
       </GuestRoute>
     ),
+  },
+  {
+    path: '/reset-password',
+    element: <ResetPasswordPage />,
+  },
+  {
+    path: '/auth/callback',
+    element: <AuthCallbackPage />,
   },
   {
     path: '/app',

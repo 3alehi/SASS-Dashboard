@@ -1,9 +1,19 @@
 import type { ReactNode } from 'react';
+import { Navigate } from 'react-router-dom';
 
-/**
- * Placeholder for the guest-only route guard (login/register/forgot-password).
- * Phase 4 replaces this with a real Supabase session check and redirect to /app/dashboard.
- */
+import { AuthLoadingScreen } from '@/components/auth/auth-loading-screen';
+import { useAuth } from '@/hooks/use-auth';
+
 export function GuestRoute({ children }: { children: ReactNode }) {
+  const { isAuthenticated, isInitialized } = useAuth();
+
+  if (!isInitialized) {
+    return <AuthLoadingScreen />;
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/app/dashboard" replace />;
+  }
+
   return <>{children}</>;
 }
