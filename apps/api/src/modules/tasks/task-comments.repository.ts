@@ -30,7 +30,10 @@ function toComment(row: TaskCommentRow): TaskComment {
 
 const SELECT_COLUMNS = '*, profiles!task_comments_author_id_fkey(full_name)';
 
-export async function listTaskComments(organizationId: string, taskId: string): Promise<TaskComment[]> {
+export async function listTaskComments(
+  organizationId: string,
+  taskId: string,
+): Promise<TaskComment[]> {
   const { data, error } = await supabaseAdmin
     .from('task_comments')
     .select(SELECT_COLUMNS)

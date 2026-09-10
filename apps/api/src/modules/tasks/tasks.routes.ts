@@ -10,10 +10,7 @@ import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 
 import { requirePermission } from '@/modules/rbac/require-permission.js';
-import {
-  createTaskComment,
-  listTaskComments,
-} from '@/modules/tasks/task-comments.repository.js';
+import { createTaskComment, listTaskComments } from '@/modules/tasks/task-comments.repository.js';
 import {
   createTask,
   getTaskById,
@@ -43,7 +40,10 @@ const commentListResponseSchema = z.object({
   data: z.array(taskCommentSchema),
 });
 const commentResponseSchema = z.object({ success: z.literal(true), data: taskCommentSchema });
-const okResponseSchema = z.object({ success: z.literal(true), data: z.object({ ok: z.literal(true) }) });
+const okResponseSchema = z.object({
+  success: z.literal(true),
+  data: z.object({ ok: z.literal(true) }),
+});
 const notFoundResponseSchema = z.object({
   success: z.literal(false),
   error: z.object({ code: z.string(), message: z.string() }),
@@ -228,7 +228,12 @@ export const tasksRoutes: FastifyPluginAsyncZod = async (app) => {
     },
     async (request, reply) => {
       const { organizationId, taskId } = request.params;
-      const comment = await createTaskComment(organizationId, taskId, request.user.id, request.body.body);
+      const comment = await createTaskComment(
+        organizationId,
+        taskId,
+        request.user.id,
+        request.body.body,
+      );
       return reply.code(201).send({ success: true as const, data: comment });
     },
   );

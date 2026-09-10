@@ -44,7 +44,8 @@ apps/api/src/
 │   ├── customers/             # full CRUD reference module (routes + repository split)
 │   ├── leads/                   # CRUD + lead conversion workflow (calls the convert_lead() SQL function)
 │   ├── pipelines/                # read-only: pipelines + ordered stages
-│   └── deals/                     # CRUD + move (Kanban drag-and-drop) + pipeline summary metrics
+│   ├── deals/                     # CRUD + move (Kanban drag-and-drop) + pipeline summary metrics
+│   └── tasks/                      # CRUD + comments + unpaginated /board endpoint
 ```
 
 Each future module (customers, leads, deals, …) follows the `team` module's shape: a
@@ -79,6 +80,14 @@ preHandlers and a Zod schema for the response.
 | PATCH  | `/api/v1/organizations/:organizationId/deals/:dealId`                 | required | `deals.update`                      | Partial update                                                                                                                    |
 | POST   | `/api/v1/organizations/:organizationId/deals/:dealId/move`            | required | `deals.update`                      | Moves a deal to a different stage; validates the stage belongs to the deal's pipeline, stamps probability + closed_at             |
 | DELETE | `/api/v1/organizations/:organizationId/deals/:dealId`                 | required | `deals.delete`                      | Soft-delete — sets `deleted_at`                                                                                                   |
+| GET    | `/api/v1/organizations/:organizationId/tasks`                         | required | `tasks.read`                        | Paginated, searchable, filterable, sortable list                                                                                  |
+| GET    | `/api/v1/organizations/:organizationId/tasks/board`                   | required | `tasks.read`                        | Every open task, unpaginated (feeds the board and calendar views)                                                                 |
+| GET    | `/api/v1/organizations/:organizationId/tasks/:taskId`                 | required | `tasks.read`                        | Single task                                                                                                                       |
+| POST   | `/api/v1/organizations/:organizationId/tasks`                         | required | `tasks.create`                      | Create a task                                                                                                                     |
+| PATCH  | `/api/v1/organizations/:organizationId/tasks/:taskId`                 | required | `tasks.update`                      | Partial update — status → `COMPLETED` stamps `completed_at`, other statuses clear it                                              |
+| DELETE | `/api/v1/organizations/:organizationId/tasks/:taskId`                 | required | `tasks.delete`                      | Soft-delete — sets `deleted_at`                                                                                                   |
+| GET    | `/api/v1/organizations/:organizationId/tasks/:taskId/comments`        | required | `tasks.read`                        | List comments on a task                                                                                                           |
+| POST   | `/api/v1/organizations/:organizationId/tasks/:taskId/comments`        | required | `tasks.update`                      | Add a comment to a task                                                                                                           |
 
 ## Adding a protected route
 

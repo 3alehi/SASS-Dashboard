@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { createTaskCommentSchema, createTaskSchema, taskListQuerySchema, updateTaskSchema } from './task.js';
+import {
+  createTaskCommentSchema,
+  createTaskSchema,
+  taskListQuerySchema,
+  updateTaskSchema,
+} from './task.js';
 
 describe('createTaskSchema', () => {
   it('accepts a minimal valid payload', () => {

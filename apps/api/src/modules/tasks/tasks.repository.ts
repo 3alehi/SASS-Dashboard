@@ -50,7 +50,8 @@ function toTask(row: TaskRow): Task {
   };
 }
 
-const SELECT_COLUMNS = '*, profiles!tasks_assignee_id_fkey(full_name), customers(name), deals(title)';
+const SELECT_COLUMNS =
+  '*, profiles!tasks_assignee_id_fkey(full_name), customers(name), deals(title)';
 
 const SORT_COLUMN_MAP: Record<TaskListQuery['sortBy'], string> = {
   title: 'title',
@@ -74,7 +75,10 @@ export interface PaginatedTasks {
   total: number;
 }
 
-export async function listTasks(organizationId: string, query: TaskListQuery): Promise<PaginatedTasks> {
+export async function listTasks(
+  organizationId: string,
+  query: TaskListQuery,
+): Promise<PaginatedTasks> {
   const from = (query.page - 1) * query.pageSize;
   const to = from + query.pageSize - 1;
 
