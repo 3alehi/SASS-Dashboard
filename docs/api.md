@@ -40,7 +40,7 @@ apps/api/src/
 │   ├── health/            # GET /api/v1/health — public liveness check
 │   ├── me/                 # GET /api/v1/me — caller's orgs + resolved permissions
 │   ├── rbac/                # requirePermission() preHandler + membership/permission repository
-│   ├── team/                 # GET /api/v1/organizations/:organizationId/team — reference RBAC route
+│   ├── team/                 # invite/role-change/deactivate/remove, with last-owner protection
 │   ├── customers/             # full CRUD reference module (routes + repository split)
 │   ├── leads/                   # CRUD + lead conversion workflow (calls the convert_lead() SQL function)
 │   ├── pipelines/                # read-only: pipelines + ordered stages
@@ -59,7 +59,12 @@ preHandlers and a Zod schema for the response.
 | ------ | --------------------------------------------------------------------- | -------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | GET    | `/api/v1/health`                                                      | none     | —                                   | Liveness check                                                                                                                    |
 | GET    | `/api/v1/me`                                                          | required | —                                   | Returns the caller's organizations, roles, and permissions                                                                        |
-| GET    | `/api/v1/organizations/:organizationId/team`                          | required | `team.manage`                       | Reference implementation of the RBAC pattern                                                                                      |
+| GET    | `/api/v1/organizations/:organizationId/team`                          | required | `team.manage`                       | List organization members                                                                                                         |
+| POST   | `/api/v1/organizations/:organizationId/team/invite`                   | required | `team.manage`                       | Invite a member by email (sends a real invite via Supabase Auth); OWNER is not an assignable role here                            |
+| PATCH  | `/api/v1/organizations/:organizationId/team/:memberId/role`           | required | `team.manage`                       | Change a member's role; refuses to demote an organization's only active OWNER                                                     |
+| POST   | `/api/v1/organizations/:organizationId/team/:memberId/deactivate`     | required | `team.manage`                       | Revoke access without deleting the member's history; refuses on the only active OWNER                                             |
+| POST   | `/api/v1/organizations/:organizationId/team/:memberId/reactivate`     | required | `team.manage`                       | Restore a deactivated member                                                                                                      |
+| DELETE | `/api/v1/organizations/:organizationId/team/:memberId`                | required | `team.manage`                       | Remove a member from the organization; refuses on the only active OWNER                                                           |
 | GET    | `/api/v1/organizations/:organizationId/customers`                     | required | `customers.read`                    | Paginated, searchable, filterable, sortable list                                                                                  |
 | GET    | `/api/v1/organizations/:organizationId/customers/:customerId`         | required | `customers.read`                    | Single customer                                                                                                                   |
 | POST   | `/api/v1/organizations/:organizationId/customers`                     | required | `customers.create`                  | Create a customer                                                                                                                 |

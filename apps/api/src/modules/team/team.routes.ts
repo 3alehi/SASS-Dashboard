@@ -16,9 +16,15 @@ import {
 const paramsSchema = z.object({ organizationId: z.string().uuid() });
 const memberParamsSchema = paramsSchema.extend({ memberId: z.string().uuid() });
 
-const teamListResponseSchema = z.object({ success: z.literal(true), data: z.array(teamMemberSchema) });
+const teamListResponseSchema = z.object({
+  success: z.literal(true),
+  data: z.array(teamMemberSchema),
+});
 const teamMemberResponseSchema = z.object({ success: z.literal(true), data: teamMemberSchema });
-const okResponseSchema = z.object({ success: z.literal(true), data: z.object({ ok: z.literal(true) }) });
+const okResponseSchema = z.object({
+  success: z.literal(true),
+  data: z.object({ ok: z.literal(true) }),
+});
 const errorResponseSchema = z.object({
   success: z.literal(false),
   error: z.object({ code: z.string(), message: z.string() }),
@@ -81,7 +87,11 @@ export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
         summary: "Change a member's role (OWNER is not assignable through this endpoint)",
         params: memberParamsSchema,
         body: updateMemberRoleSchema,
-        response: { 200: teamMemberResponseSchema, 400: errorResponseSchema, 404: errorResponseSchema },
+        response: {
+          200: teamMemberResponseSchema,
+          400: errorResponseSchema,
+          404: errorResponseSchema,
+        },
       },
     },
     async (request, reply) => {

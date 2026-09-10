@@ -23,7 +23,11 @@ function makeCountQueryStub(count: number) {
   const builder: Record<string, unknown> = {};
   builder.select = () => builder;
   builder.eq = () => builder;
-  Object.assign(builder, { then: Promise.resolve({ count, error: null }).then.bind(Promise.resolve({ count, error: null })) });
+  Object.assign(builder, {
+    then: Promise.resolve({ count, error: null }).then.bind(
+      Promise.resolve({ count, error: null }),
+    ),
+  });
   return builder;
 }
 

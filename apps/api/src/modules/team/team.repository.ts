@@ -60,7 +60,11 @@ export async function listMembers(organizationId: string): Promise<TeamMember[]>
 }
 
 async function getRoleId(roleName: AssignableRole): Promise<number | null> {
-  const { data } = await supabaseAdmin.from('roles').select('id').eq('name', roleName).maybeSingle();
+  const { data } = await supabaseAdmin
+    .from('roles')
+    .select('id')
+    .eq('name', roleName)
+    .maybeSingle();
   return (data?.id as number | undefined) ?? null;
 }
 
@@ -95,7 +99,8 @@ export async function inviteMember(
   let userId: string | null = existingUser?.id ?? null;
 
   if (!userId) {
-    const { data: invited, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email);
+    const { data: invited, error: inviteError } =
+      await supabaseAdmin.auth.admin.inviteUserByEmail(email);
     if (inviteError) {
       return { member: null, error: inviteError.message };
     }
@@ -188,7 +193,10 @@ export async function removeMember(organizationId: string, memberId: string): Pr
  * transfer flow (not yet implemented) would be the supported way to change
  * who owns an org.
  */
-export async function isLastActiveOwner(organizationId: string, memberId: string): Promise<boolean> {
+export async function isLastActiveOwner(
+  organizationId: string,
+  memberId: string,
+): Promise<boolean> {
   const { data: member } = await supabaseAdmin
     .from('organization_members')
     .select('status, roles!inner(name)')
@@ -209,17 +217,4 @@ export async function isLastActiveOwner(organizationId: string, memberId: string
     .eq('roles.name', 'OWNER');
 
   return (count ?? 0) <= 1;
-}
-
-export async function getMemberRole(organizationId: string, memberId: string): Promise<string | null> {
-  const { data } = await supabaseAdmin
-    .from('organization_members')
-    .select('roles!inner(name)')
-    .eq('organization_id', organizationId)
-    .eq('id', memberId)
-    .maybeSingle();
-
-  if (!data) return null;
-  const role = unwrap(data.roles as { name: string } | { name: string }[] | null);
-  return role?.name ?? null;
 }

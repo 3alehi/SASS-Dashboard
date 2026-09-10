@@ -18,7 +18,10 @@ describe('team routes', () => {
   });
 
   it('GET .../team requires authentication', async () => {
-    const response = await app.inject({ method: 'GET', url: `/api/v1/organizations/${orgId}/team` });
+    const response = await app.inject({
+      method: 'GET',
+      url: `/api/v1/organizations/${orgId}/team`,
+    });
     expect(response.statusCode).toBe(401);
   });
 

@@ -65,3 +65,13 @@ code — it can be inspected or extended with plain SQL.
 never accepted as a raw value from request bodies or query params for authorization decisions —
 only from the route path, which `requirePermission` then verifies against real membership before
 trusting it for anything. See [security.md](./security.md).
+
+## Team management cannot mint or orphan an OWNER
+
+The team API (`apps/api/src/modules/team`) deliberately excludes `OWNER` from the set of roles
+assignable via invite or role-change — a `team.manage` holder (which includes `ADMIN`) can invite
+and promote up to `ADMIN`, but never create a second owner or hand ownership to someone else.
+Conversely, `isLastActiveOwner()` blocks demoting, deactivating, or removing an organization's only
+active owner through any of those endpoints, so an organization can never end up with zero owners
+by mistake. There is currently no supported "transfer ownership" flow — that would need to be a
+dedicated, more carefully guarded operation.

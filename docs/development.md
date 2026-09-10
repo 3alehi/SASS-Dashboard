@@ -16,7 +16,7 @@ and committed before the next one starts. Branching follows Git Flow:
 | 8   | Deals + pipeline                    | ✅ Done    |
 | 9   | Tasks                               | ✅ Done    |
 | 10  | Tickets                             | ✅ Done    |
-| 11  | Team management                     | ⏳ Planned |
+| 11  | Team management                     | ✅ Done    |
 | 12  | Dashboard + analytics               | ⏳ Planned |
 | 13  | Notifications + realtime            | ⏳ Planned |
 | 14  | Global search + command palette     | ⏳ Planned |
