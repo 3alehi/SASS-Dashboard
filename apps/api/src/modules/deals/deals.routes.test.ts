@@ -43,7 +43,10 @@ describe('deals and pipelines routes', () => {
   });
 
   it('GET .../deals requires authentication', async () => {
-    const response = await app.inject({ method: 'GET', url: `/api/v1/organizations/${orgId}/deals` });
+    const response = await app.inject({
+      method: 'GET',
+      url: `/api/v1/organizations/${orgId}/deals`,
+    });
     expect(response.statusCode).toBe(401);
   });
 

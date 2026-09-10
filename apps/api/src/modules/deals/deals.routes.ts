@@ -38,7 +38,10 @@ const dealListResponseSchema = z.object({
 });
 const dealArrayResponseSchema = z.object({ success: z.literal(true), data: z.array(dealSchema) });
 const summaryResponseSchema = z.object({ success: z.literal(true), data: pipelineSummarySchema });
-const okResponseSchema = z.object({ success: z.literal(true), data: z.object({ ok: z.literal(true) }) });
+const okResponseSchema = z.object({
+  success: z.literal(true),
+  data: z.object({ ok: z.literal(true) }),
+});
 const notFoundResponseSchema = z.object({
   success: z.literal(false),
   error: z.object({ code: z.string(), message: z.string() }),
@@ -204,7 +207,8 @@ export const dealsRoutes: FastifyPluginAsyncZod = async (app) => {
           success: false as const,
           error: {
             code: 'NOT_FOUND',
-            message: 'Deal or target stage not found, or the stage belongs to a different pipeline.',
+            message:
+              'Deal or target stage not found, or the stage belongs to a different pipeline.',
           },
         });
       }

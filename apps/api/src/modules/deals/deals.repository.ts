@@ -1,4 +1,10 @@
-import type { CreateDealInput, Deal, DealListQuery, PipelineSummary, UpdateDealInput } from '@nexora/shared';
+import type {
+  CreateDealInput,
+  Deal,
+  DealListQuery,
+  PipelineSummary,
+  UpdateDealInput,
+} from '@nexora/shared';
 
 import { supabaseAdmin } from '@/lib/supabase-admin.js';
 
@@ -72,7 +78,10 @@ export interface PaginatedDeals {
   total: number;
 }
 
-export async function listDeals(organizationId: string, query: DealListQuery): Promise<PaginatedDeals> {
+export async function listDeals(
+  organizationId: string,
+  query: DealListQuery,
+): Promise<PaginatedDeals> {
   const from = (query.page - 1) * query.pageSize;
   const to = from + query.pageSize - 1;
 
@@ -117,7 +126,10 @@ export async function listDeals(organizationId: string, query: DealListQuery): P
  * Kanban board (which needs every deal grouped by stage, not a single page)
  * and to compute pipeline summary metrics.
  */
-export async function listDealsForPipeline(organizationId: string, pipelineId: string): Promise<Deal[]> {
+export async function listDealsForPipeline(
+  organizationId: string,
+  pipelineId: string,
+): Promise<Deal[]> {
   const { data, error } = await supabaseAdmin
     .from('deals')
     .select(SELECT_COLUMNS)
@@ -283,7 +295,9 @@ export async function getPipelineSummary(
     .select('id, kind')
     .eq('pipeline_id', pipelineId);
 
-  const stageKindById = new Map((stages ?? []).map((stage) => [stage.id as string, stage.kind as string]));
+  const stageKindById = new Map(
+    (stages ?? []).map((stage) => [stage.id as string, stage.kind as string]),
+  );
 
   let totalValue = 0;
   let weightedValue = 0;

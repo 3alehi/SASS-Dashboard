@@ -38,9 +38,7 @@ function toPipeline(row: PipelineRow): Pipeline {
     organizationId: row.organization_id,
     name: row.name,
     isDefault: row.is_default,
-    stages: (row.pipeline_stages ?? [])
-      .map(toStage)
-      .sort((a, b) => a.sortOrder - b.sortOrder),
+    stages: (row.pipeline_stages ?? []).map(toStage).sort((a, b) => a.sortOrder - b.sortOrder),
   };
 }
 

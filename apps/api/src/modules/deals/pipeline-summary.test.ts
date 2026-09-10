@@ -88,7 +88,9 @@ describe('getPipelineSummary', () => {
   });
 
   it('returns a 0% conversion rate when no deals are closed yet', async () => {
-    const dealsResult = { data: [dealRow({ id: '1', stage_id: 'stage-open', value: 1000, probability: 50 })] };
+    const dealsResult = {
+      data: [dealRow({ id: '1', stage_id: 'stage-open', value: 1000, probability: 50 })],
+    };
     const stagesResult = { data: [{ id: 'stage-open', kind: 'OPEN' }] };
 
     vi.spyOn(supabaseAdmin, 'from').mockImplementation((table: string) => {

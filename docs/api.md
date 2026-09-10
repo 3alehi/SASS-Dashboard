@@ -42,7 +42,9 @@ apps/api/src/
 │   ├── rbac/                # requirePermission() preHandler + membership/permission repository
 │   ├── team/                 # GET /api/v1/organizations/:organizationId/team — reference RBAC route
 │   ├── customers/             # full CRUD reference module (routes + repository split)
-│   └── leads/                   # CRUD + lead conversion workflow (calls the convert_lead() SQL function)
+│   ├── leads/                   # CRUD + lead conversion workflow (calls the convert_lead() SQL function)
+│   ├── pipelines/                # read-only: pipelines + ordered stages
+│   └── deals/                     # CRUD + move (Kanban drag-and-drop) + pipeline summary metrics
 ```
 
 Each future module (customers, leads, deals, …) follows the `team` module's shape: a
@@ -68,6 +70,15 @@ preHandlers and a Zod schema for the response.
 | PATCH  | `/api/v1/organizations/:organizationId/leads/:leadId`                 | required | `leads.update`                      | Partial update                                                                                                                    |
 | DELETE | `/api/v1/organizations/:organizationId/leads/:leadId`                 | required | `leads.delete`                      | Soft-delete — sets `deleted_at` (no restore endpoint yet)                                                                         |
 | POST   | `/api/v1/organizations/:organizationId/leads/:leadId/convert`         | required | `leads.update` + `customers.create` | Converts a lead into a customer (+ contact, optionally a deal) via the `convert_lead()` Postgres function; preserves the lead row |
+| GET    | `/api/v1/organizations/:organizationId/pipelines`                     | required | `deals.read`                        | List pipelines with their ordered stages                                                                                          |
+| GET    | `/api/v1/organizations/:organizationId/pipelines/:pipelineId/deals`   | required | `deals.read`                        | Every open+closed deal in a pipeline, unpaginated (feeds the Kanban board)                                                        |
+| GET    | `/api/v1/organizations/:organizationId/pipelines/:pipelineId/summary` | required | `deals.read`                        | Total/weighted/won value and conversion rate for a pipeline                                                                       |
+| GET    | `/api/v1/organizations/:organizationId/deals`                         | required | `deals.read`                        | Paginated, searchable, filterable, sortable list                                                                                  |
+| GET    | `/api/v1/organizations/:organizationId/deals/:dealId`                 | required | `deals.read`                        | Single deal                                                                                                                       |
+| POST   | `/api/v1/organizations/:organizationId/deals`                         | required | `deals.create`                      | Create a deal                                                                                                                     |
+| PATCH  | `/api/v1/organizations/:organizationId/deals/:dealId`                 | required | `deals.update`                      | Partial update                                                                                                                    |
+| POST   | `/api/v1/organizations/:organizationId/deals/:dealId/move`            | required | `deals.update`                      | Moves a deal to a different stage; validates the stage belongs to the deal's pipeline, stamps probability + closed_at             |
+| DELETE | `/api/v1/organizations/:organizationId/deals/:dealId`                 | required | `deals.delete`                      | Soft-delete — sets `deleted_at`                                                                                                   |
 
 ## Adding a protected route
 
