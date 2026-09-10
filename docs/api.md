@@ -40,7 +40,8 @@ apps/api/src/
 │   ├── health/            # GET /api/v1/health — public liveness check
 │   ├── me/                 # GET /api/v1/me — caller's orgs + resolved permissions
 │   ├── rbac/                # requirePermission() preHandler + membership/permission repository
-│   └── team/                 # GET /api/v1/organizations/:organizationId/team — reference RBAC route
+│   ├── team/                 # GET /api/v1/organizations/:organizationId/team — reference RBAC route
+│   └── customers/             # full CRUD reference module (routes + repository split)
 ```
 
 Each future module (customers, leads, deals, …) follows the `team` module's shape: a
@@ -49,11 +50,17 @@ preHandlers and a Zod schema for the response.
 
 ## Current endpoints
 
-| Method | Path                                         | Auth     | Permission    | Notes                                                      |
-| ------ | -------------------------------------------- | -------- | ------------- | ---------------------------------------------------------- |
-| GET    | `/api/v1/health`                             | none     | —             | Liveness check                                             |
-| GET    | `/api/v1/me`                                 | required | —             | Returns the caller's organizations, roles, and permissions |
-| GET    | `/api/v1/organizations/:organizationId/team` | required | `team.manage` | Reference implementation of the RBAC pattern               |
+| Method | Path                                                                  | Auth     | Permission         | Notes                                                          |
+| ------ | --------------------------------------------------------------------- | -------- | ------------------ | -------------------------------------------------------------- |
+| GET    | `/api/v1/health`                                                      | none     | —                  | Liveness check                                                 |
+| GET    | `/api/v1/me`                                                          | required | —                  | Returns the caller's organizations, roles, and permissions     |
+| GET    | `/api/v1/organizations/:organizationId/team`                          | required | `team.manage`      | Reference implementation of the RBAC pattern                   |
+| GET    | `/api/v1/organizations/:organizationId/customers`                     | required | `customers.read`   | Paginated, searchable, filterable, sortable list               |
+| GET    | `/api/v1/organizations/:organizationId/customers/:customerId`         | required | `customers.read`   | Single customer                                                |
+| POST   | `/api/v1/organizations/:organizationId/customers`                     | required | `customers.create` | Create a customer                                              |
+| PATCH  | `/api/v1/organizations/:organizationId/customers/:customerId`         | required | `customers.update` | Partial update                                                 |
+| DELETE | `/api/v1/organizations/:organizationId/customers/:customerId`         | required | `customers.delete` | Soft-delete (archive) — sets `deleted_at`, never a hard delete |
+| POST   | `/api/v1/organizations/:organizationId/customers/:customerId/restore` | required | `customers.update` | Restores an archived customer                                  |
 
 ## Adding a protected route
 
