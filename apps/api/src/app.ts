@@ -12,6 +12,7 @@ import {
 } from 'fastify-type-provider-zod';
 
 import { env } from '@/config/env.js';
+import { auditLogRoutes } from '@/modules/audit/audit-log.routes.js';
 import { customersRoutes } from '@/modules/customers/customers.routes.js';
 import { dashboardRoutes } from '@/modules/dashboard/dashboard.routes.js';
 import { dealsRoutes } from '@/modules/deals/deals.routes.js';
@@ -24,6 +25,7 @@ import { searchRoutes } from '@/modules/search/search.routes.js';
 import { tasksRoutes } from '@/modules/tasks/tasks.routes.js';
 import { teamRoutes } from '@/modules/team/team.routes.js';
 import { ticketsRoutes } from '@/modules/tickets/tickets.routes.js';
+import auditLogPlugin from '@/plugins/audit-log.js';
 import authenticatePlugin from '@/plugins/authenticate.js';
 import errorHandlerPlugin from '@/plugins/error-handler.js';
 
@@ -67,6 +69,7 @@ export async function buildApp() {
 
   await app.register(errorHandlerPlugin);
   await app.register(authenticatePlugin);
+  await app.register(auditLogPlugin);
 
   await app.register(
     async (v1) => {
@@ -82,6 +85,7 @@ export async function buildApp() {
       await v1.register(dashboardRoutes);
       await v1.register(notificationsRoutes);
       await v1.register(searchRoutes);
+      await v1.register(auditLogRoutes);
     },
     { prefix: '/api/v1' },
   );
