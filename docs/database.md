@@ -72,28 +72,28 @@ erDiagram
 
 ## Table reference
 
-| Table                                    | Purpose                                                                                                                                         |
-| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `profiles`                               | One row per Supabase auth user; mirrors `auth.users` for app-visible profile data. Auto-created via `handle_new_auth_user()` trigger on signup. |
-| `organizations`                          | The tenant boundary.                                                                                                                            |
-| `organization_members`                   | Join table: which users belong to which organizations, with what role and status (`ACTIVE`/`INVITED`/`DEACTIVATED`).                            |
-| `roles`                                  | Fixed, system-defined roles: `OWNER`, `ADMIN`, `MANAGER`, `SALES`, `SUPPORT`, `MEMBER`.                                                         |
-| `permissions`                            | Granular `resource.action` permission keys (e.g. `customers.create`).                                                                           |
-| `role_permissions`                       | The permission matrix mapping each role to its granted permissions.                                                                             |
-| `customers`, `customer_contacts`         | CRM customer accounts and their contacts.                                                                                                       |
-| `leads`, `lead_sources`, `lead_statuses` | Lead funnel (`NEW` → … → `WON`/`LOST`).                                                                                                         |
-| `pipelines`, `pipeline_stages`           | Configurable sales pipelines and their ordered stages.                                                                                          |
-| `deals`, `deal_products`, `products`     | Deals moving through a pipeline, with optional line-item products.                                                                              |
-| `tasks`, `task_comments`                 | Task management, optionally linked to a customer or deal.                                                                                       |
-| `activities`, `notes`                    | Polymorphic timeline entries and freeform notes attached to a customer, lead, or deal.                                                          |
-| `tickets`, `ticket_messages`             | Support ticketing with a threaded conversation.                                                                                                 |
-| `notifications`                          | Per-user notifications; never visible cross-user.                                                                                               |
-| `audit_logs`                             | Append-only activity trail. No update/delete policy exists for any role.                                                                        |
-| `tags`, `entity_tags`                    | Shared tagging, polymorphically attached to customers/leads/deals/tasks/tickets.                                                                |
-| `saved_filters`, `dashboard_widgets`     | Per-user (optionally org-shared) saved views and dashboard layout.                                                                              |
-| `user_preferences`                       | Per-user theme, active-organization state, and `notification_settings` (per-type in-app notification toggles).                                  |
-| `organization_settings`                  | Org-level configuration (currency, date format, branding).                                                                                      |
-| `subscriptions`                          | Plan and billing status per organization.                                                                                                       |
+| Table                                    | Purpose                                                                                                                                          |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `profiles`                               | One row per Supabase auth user; mirrors `auth.users` for app-visible profile data. Auto-created via `handle_new_auth_user()` trigger on signup.  |
+| `organizations`                          | The tenant boundary.                                                                                                                             |
+| `organization_members`                   | Join table: which users belong to which organizations, with what role and status (`ACTIVE`/`INVITED`/`DEACTIVATED`).                             |
+| `roles`                                  | Fixed, system-defined roles: `OWNER`, `ADMIN`, `MANAGER`, `SALES`, `SUPPORT`, `MEMBER`.                                                          |
+| `permissions`                            | Granular `resource.action` permission keys (e.g. `customers.create`).                                                                            |
+| `role_permissions`                       | The permission matrix mapping each role to its granted permissions.                                                                              |
+| `customers`, `customer_contacts`         | CRM customer accounts and their contacts.                                                                                                        |
+| `leads`, `lead_sources`, `lead_statuses` | Lead funnel (`NEW` → … → `WON`/`LOST`).                                                                                                          |
+| `pipelines`, `pipeline_stages`           | Configurable sales pipelines and their ordered stages.                                                                                           |
+| `deals`, `deal_products`, `products`     | Deals moving through a pipeline, with optional line-item products.                                                                               |
+| `tasks`, `task_comments`                 | Task management, optionally linked to a customer or deal.                                                                                        |
+| `activities`, `notes`                    | Polymorphic timeline entries and freeform notes attached to a customer, lead, or deal.                                                           |
+| `tickets`, `ticket_messages`             | Support ticketing with a threaded conversation.                                                                                                  |
+| `notifications`                          | Per-user notifications; never visible cross-user.                                                                                                |
+| `audit_logs`                             | Append-only activity trail. Insert is open to any active member; select requires `settings.manage`. No update/delete policy exists for any role. |
+| `tags`, `entity_tags`                    | Shared tagging, polymorphically attached to customers/leads/deals/tasks/tickets.                                                                 |
+| `saved_filters`, `dashboard_widgets`     | Per-user (optionally org-shared) saved views and dashboard layout.                                                                               |
+| `user_preferences`                       | Per-user theme, active-organization state, and `notification_settings` (per-type in-app notification toggles).                                   |
+| `organization_settings`                  | Org-level configuration (currency, date format, branding).                                                                                       |
+| `subscriptions`                          | Plan and billing status per organization.                                                                                                        |
 
 ## Soft deletes
 

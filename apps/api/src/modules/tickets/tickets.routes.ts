@@ -111,6 +111,7 @@ export const ticketsRoutes: FastifyPluginAsyncZod = async (app) => {
     '/organizations/:organizationId/tickets',
     {
       preHandler: [app.authenticate, requirePermission('tickets.create')],
+      config: { audit: { action: 'ticket.create', entityType: 'ticket' } },
       schema: {
         tags: ['tickets'],
         summary: 'Create a ticket',
@@ -130,6 +131,7 @@ export const ticketsRoutes: FastifyPluginAsyncZod = async (app) => {
     '/organizations/:organizationId/tickets/:ticketId',
     {
       preHandler: [app.authenticate, requirePermission('tickets.update')],
+      config: { audit: { action: 'ticket.update', entityType: 'ticket' } },
       schema: {
         tags: ['tickets'],
         summary: 'Update a ticket (status → RESOLVED/CLOSED stamps the matching timestamp)',
@@ -157,6 +159,7 @@ export const ticketsRoutes: FastifyPluginAsyncZod = async (app) => {
     '/organizations/:organizationId/tickets/:ticketId',
     {
       preHandler: [app.authenticate, requirePermission('tickets.delete')],
+      config: { audit: { action: 'ticket.delete', entityType: 'ticket' } },
       schema: {
         tags: ['tickets'],
         summary: 'Delete a ticket',

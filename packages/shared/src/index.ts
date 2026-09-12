@@ -11,3 +11,4 @@ export * from './schemas/team.js';
 export * from './schemas/dashboard.js';
 export * from './schemas/notification.js';
 export * from './schemas/search.js';
+export * from './schemas/audit-log.js';
