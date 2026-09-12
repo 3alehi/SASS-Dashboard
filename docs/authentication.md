@@ -3,7 +3,8 @@
 NEXORA uses **Supabase Auth** for identity. The frontend talks to Supabase directly for
 authentication via `@supabase/supabase-js`
 ([`apps/web/src/lib/supabase.ts`](../apps/web/src/lib/supabase.ts)); the API never issues its own
-credentials or sessions — it only verifies the Supabase-issued JWT on incoming requests (Phase 5).
+credentials or sessions — it only verifies the Supabase-issued JWT on incoming requests, via the
+`authenticate` plugin described below.
 
 ## Implemented flows
 
@@ -25,12 +26,13 @@ Every auth form uses React Hook Form + a Zod schema from
 [`schemas/auth.ts`](../apps/web/src/schemas/auth.ts): `loginSchema`, `registerSchema`,
 `forgotPasswordSchema`, `resetPasswordSchema`, `changePasswordSchema`, `updateProfileSchema`.
 Passwords require 8+ characters with at least one uppercase letter, one lowercase letter, and one
-number. These same rules will be mirrored on the API in Phase 5 — the frontend check is a UX
-convenience, not a security boundary.
+number. This is a UX convenience only — the real boundary is Supabase Auth's own password rules
+plus the server-side checks below, not the frontend schema.
 
-## Server-side verification (Phase 5)
+## Server-side verification
 
-The Fastify API will verify the Supabase-issued JWT on every authenticated request and derive the
-user's identity from it — the API never trusts a client-supplied user id. Organization membership
-and role are then resolved from `organization_members` for that verified user id, per request. See
+The Fastify API verifies the Supabase-issued JWT on every authenticated request
+([`plugins/authenticate.ts`](../apps/api/src/plugins/authenticate.ts)) and derives the user's
+identity from it — the API never trusts a client-supplied user id. Organization membership and
+role are then resolved from `organization_members` for that verified user id, per request. See
 [authorization.md](./authorization.md) and [security.md](./security.md).

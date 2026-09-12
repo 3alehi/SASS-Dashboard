@@ -120,10 +120,12 @@ strings, used when `preset=custom`), and `compare` (boolean, default `false` —
 true, KPIs and the revenue series also return the immediately preceding period of
 equal length for comparison).
 
-| GET | `/api/v1/organizations/:organizationId/notifications` | required | — | Paginated list of the caller's own notifications (`unreadOnly` filter) |
-| GET | `/api/v1/organizations/:organizationId/notifications/unread-count` | required | — | Unread count for the caller, polled by the bell badge as a fallback and read on mount |
-| POST | `/api/v1/organizations/:organizationId/notifications/read-all` | required | — | Marks every one of the caller's notifications as read |
-| POST | `/api/v1/organizations/:organizationId/notifications/:notificationId/read` | required | — | Marks a single notification as read |
+| Method | Path                                                                       | Auth     | Permission | Notes                                                                                 |
+| ------ | -------------------------------------------------------------------------- | -------- | ---------- | ------------------------------------------------------------------------------------- |
+| GET    | `/api/v1/organizations/:organizationId/notifications`                      | required | —          | Paginated list of the caller's own notifications (`unreadOnly` filter)                |
+| GET    | `/api/v1/organizations/:organizationId/notifications/unread-count`         | required | —          | Unread count for the caller, polled by the bell badge as a fallback and read on mount |
+| POST   | `/api/v1/organizations/:organizationId/notifications/read-all`             | required | —          | Marks every one of the caller's notifications as read                                 |
+| POST   | `/api/v1/organizations/:organizationId/notifications/:notificationId/read` | required | —          | Marks a single notification as read                                                   |
 
 `notifications/*` routes have no permission gate beyond authentication — every query
 already filters by `request.user.id`, matching the notifications table's RLS policies,
@@ -132,14 +134,18 @@ arrive in the frontend via a Supabase Realtime subscription (see
 [database.md](./database.md#realtime)) rather than polling; the unread-count and list
 endpoints back the initial render and the full notifications page.
 
-| GET | `/api/v1/organizations/:organizationId/search` | required | — | Ranked search across customers, leads, deals, tasks, and tickets (`q`, `limit`, default 8) |
+| Method | Path                                           | Auth     | Permission | Notes                                                                                      |
+| ------ | ---------------------------------------------- | -------- | ---------- | ------------------------------------------------------------------------------------------ |
+| GET    | `/api/v1/organizations/:organizationId/search` | required | —          | Ranked search across customers, leads, deals, tasks, and tickets (`q`, `limit`, default 8) |
 
 `search` has no `requirePermission()` gate beyond authentication either — the
 `global_search()` Postgres function it calls checks organization membership and, per
 entity type, the matching `.read` permission itself, so a caller without e.g.
 `leads.read` simply never sees lead rows in the result set.
 
-| GET | `/api/v1/organizations/:organizationId/audit-logs` | required | `settings.manage` | Paginated, filterable audit trail (`entityType`, `action`, `actorId`, `from`, `to`) |
+| Method | Path                                               | Auth     | Permission        | Notes                                                                               |
+| ------ | -------------------------------------------------- | -------- | ----------------- | ----------------------------------------------------------------------------------- |
+| GET    | `/api/v1/organizations/:organizationId/audit-logs` | required | `settings.manage` | Paginated, filterable audit trail (`entityType`, `action`, `actorId`, `from`, `to`) |
 
 ## Audit logging
 

@@ -8,7 +8,8 @@ write another organization's data. This is enforced with defense in depth:
 1. **PostgreSQL Row Level Security** on every tenant table (see
    [`0012_row_level_security.sql`](../database/migrations/0012_row_level_security.sql)) — the
    database itself refuses cross-tenant reads/writes, independent of application code.
-2. **Server-side permission checks** in the API (Phase 4/5) before any mutation.
+2. **Server-side permission checks** in the API before any mutation — see
+   [authorization.md](./authorization.md).
 3. **Never trusting client-supplied identifiers.** `organization_id`, `user_id`, `role`, and
    `permissions` are never accepted from request bodies, query params, or JWT claims the client
    controls — they are always re-derived server-side from the verified session and the
@@ -42,9 +43,14 @@ write another organization's data. This is enforced with defense in depth:
   `is_internal = false` in its own query rather than relying on this table's default visibility —
   see the comment in `apps/api/src/modules/tickets/ticket-messages.repository.ts`.
 
-## Planned application-layer protections (Phase 4/5/20)
+## Application-layer protections
 
-- Input validation with Zod on every API route, mirroring frontend validation.
-- Rate limiting, Helmet security headers, and CORS restricted to known origins.
-- Structured logging (Pino) with request IDs; secrets and passwords are never logged.
-- A dedicated security-audit pass (Phase 20) before production polish.
+- **Input validation** with Zod on every API route (`schema.params`/`.body`/`.querystring`),
+  mirroring frontend validation — a request with an invalid shape never reaches handler code.
+- **Rate limiting**, Helmet security headers, and CORS restricted to `API_CORS_ORIGIN` are
+  registered as Fastify plugins in [`app.ts`](../apps/api/src/app.ts).
+- **Structured logging** (Pino) with a `reqId` per request; `authorization` headers and cookies
+  are redacted from logs, and secrets/passwords are never logged.
+
+A dedicated security-audit pass (Phase 20) is planned before production polish, to review this
+threat model against the full, later codebase rather than module-by-module as each phase lands.
