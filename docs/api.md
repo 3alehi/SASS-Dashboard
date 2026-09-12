@@ -49,7 +49,8 @@ apps/api/src/
 │   ├── tickets/                     # CRUD + threaded conversation with internal notes
 │   ├── dashboard/                    # KPI overview + chart series, gated by reports.read
 │   ├── notifications/                 # Per-user notification inbox, delivered live via Supabase Realtime
-│   └── search/                         # Global search across customers/leads/deals/tasks/tickets
+│   ├── search/                         # Global search across customers/leads/deals/tasks/tickets
+│   └── audit/                           # Audit log plugin + list endpoint, gated by settings.manage
 ```
 
 Each future module (customers, leads, deals, …) follows the `team` module's shape: a
@@ -137,6 +138,40 @@ endpoints back the initial render and the full notifications page.
 `global_search()` Postgres function it calls checks organization membership and, per
 entity type, the matching `.read` permission itself, so a caller without e.g.
 `leads.read` simply never sees lead rows in the result set.
+
+| GET | `/api/v1/organizations/:organizationId/audit-logs` | required | `settings.manage` | Paginated, filterable audit trail (`entityType`, `action`, `actorId`, `from`, `to`) |
+
+## Audit logging
+
+Every mutating route that creates, updates, or deletes a business record opts into
+automatic audit logging by adding `config: { audit: { action, entityType } }` next to
+its `schema`:
+
+```ts
+app.post(
+  '/organizations/:organizationId/customers',
+  {
+    preHandler: [app.authenticate, requirePermission('customers.create')],
+    config: { audit: { action: 'customer.create', entityType: 'customer' } },
+    schema: {
+      params: paramsSchema,
+      body: createCustomerSchema,
+      response: { 201: customerResponseSchema },
+    },
+  },
+  async (request, reply) => {
+    /* ... */
+  },
+);
+```
+
+A single `onSend` hook (`src/plugins/audit-log.ts`) reads that config after every
+request and, only on a successful (2xx) response, writes a row to `audit_logs` —
+resolving the entity id from the route's `:xId` param for update/delete, or from the
+`{ data: { id } }` response body for create. This means a route can't forget to log:
+adding the config is the only step, and a failed write is never logged as having
+happened. High-frequency, conversational writes (task comments, ticket messages) are
+deliberately excluded — audit logs record discrete business events, not chat.
 
 ## Adding a protected route
 
