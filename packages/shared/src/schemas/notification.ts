@@ -34,3 +34,34 @@ export type NotificationListQuery = z.infer<typeof notificationListQuerySchema>;
 
 export const unreadCountSchema = z.object({ count: z.number() });
 export type UnreadCount = z.infer<typeof unreadCountSchema>;
+
+/**
+ * One toggle per notification type the product actually generates today.
+ * TEAM_INVITATION is intentionally excluded — that email always sends via
+ * Supabase Auth regardless of in-app preference, since it's how someone
+ * without an account yet gets access at all.
+ */
+export const NOTIFICATION_PREFERENCE_KEYS = [
+  'taskAssigned',
+  'taskDue',
+  'dealUpdated',
+  'leadAssigned',
+  'ticketAssigned',
+  'mention',
+] as const;
+export type NotificationPreferenceKey = (typeof NOTIFICATION_PREFERENCE_KEYS)[number];
+
+export const notificationPreferencesSchema = z.object({
+  taskAssigned: z.boolean().default(true),
+  taskDue: z.boolean().default(true),
+  dealUpdated: z.boolean().default(true),
+  leadAssigned: z.boolean().default(true),
+  ticketAssigned: z.boolean().default(true),
+  mention: z.boolean().default(true),
+});
+export type NotificationPreferences = z.infer<typeof notificationPreferencesSchema>;
+
+export const updateNotificationPreferencesSchema = notificationPreferencesSchema.partial();
+export type UpdateNotificationPreferencesInput = z.infer<
+  typeof updateNotificationPreferencesSchema
+>;

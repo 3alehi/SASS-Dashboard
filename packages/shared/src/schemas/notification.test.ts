@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { notificationListQuerySchema } from './notification.js';
+import { notificationListQuerySchema, notificationPreferencesSchema } from './notification.js';
 
 describe('notificationListQuerySchema', () => {
   it('applies defaults', () => {
@@ -24,5 +24,25 @@ describe('notificationListQuerySchema', () => {
   it('rejects a pageSize above the max', () => {
     const result = notificationListQuerySchema.safeParse({ pageSize: 500 });
     expect(result.success).toBe(false);
+  });
+});
+
+describe('notificationPreferencesSchema', () => {
+  it('defaults every preference to true when given an empty object', () => {
+    const result = notificationPreferencesSchema.safeParse({});
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.taskAssigned).toBe(true);
+      expect(result.data.mention).toBe(true);
+    }
+  });
+
+  it('accepts a partial override with some preferences off', () => {
+    const result = notificationPreferencesSchema.safeParse({ taskAssigned: false });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.taskAssigned).toBe(false);
+      expect(result.data.leadAssigned).toBe(true);
+    }
   });
 });
