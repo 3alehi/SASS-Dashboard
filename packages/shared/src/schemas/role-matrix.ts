@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { ORGANIZATION_ROLES } from '../constants/roles.js';
 import { PERMISSIONS } from '../constants/permissions.js';
+import { ORGANIZATION_ROLES } from '../constants/roles.js';
 
 export const roleMatrixEntrySchema = z.object({
   role: z.enum(ORGANIZATION_ROLES),
