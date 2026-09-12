@@ -1,0 +1,117 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  NODE_VERSION: '20'
+  # Placeholder (non-secret) values so the production Vite build doesn't
+  # throw on the missing-env guard in apps/web/src/lib/supabase.ts. These
+  # are syntactically valid but fake — never real credentials.
+  VITE_SUPABASE_URL: https://ci-placeholder.supabase.co
+  VITE_SUPABASE_ANON_KEY: ci-placeholder-key
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (all workspaces)
+        run: npm run lint
+
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck packages/shared
+        run: npm run typecheck --workspace=packages/shared
+
+      - name: Typecheck apps/api
+        run: npm run typecheck --workspace=apps/api
+
+      - name: Typecheck apps/web
+        run: npm run typecheck --workspace=apps/web
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test packages/shared
+        run: npm run test --workspace=packages/shared
+
+      - name: Test apps/api
+        # Runs fully offline: apps/api/src/test/setup.ts seeds safe fake
+        # SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY /
+        # JWT_SECRET values via `??=`, so no real Supabase project or
+        # GitHub secrets are needed here.
+        run: npm run test --workspace=apps/api
+
+      - name: Test apps/web
+        run: npm run test --workspace=apps/web
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck packages/shared (no build step — types re-exported directly from source)
+        run: npm run typecheck --workspace=packages/shared
+
+      - name: Build apps/api
+        run: npm run build --workspace=apps/api
+
+      - name: Build apps/web
+        # VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY are the placeholder
+        # values set at the top of this file — fake but syntactically
+        # valid, just enough to satisfy the production-build guard.
+        run: npm run build --workspace=apps/web
