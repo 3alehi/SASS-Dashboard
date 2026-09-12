@@ -12,3 +12,5 @@ export * from './schemas/dashboard.js';
 export * from './schemas/notification.js';
 export * from './schemas/search.js';
 export * from './schemas/audit-log.js';
+export * from './schemas/organization.js';
+export * from './schemas/role-matrix.js';
