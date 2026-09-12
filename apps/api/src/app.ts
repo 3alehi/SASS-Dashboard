@@ -13,6 +13,7 @@ import {
 
 import { env } from '@/config/env.js';
 import { customersRoutes } from '@/modules/customers/customers.routes.js';
+import { dashboardRoutes } from '@/modules/dashboard/dashboard.routes.js';
 import { dealsRoutes } from '@/modules/deals/deals.routes.js';
 import { healthRoutes } from '@/modules/health/health.routes.js';
 import { leadsRoutes } from '@/modules/leads/leads.routes.js';
@@ -76,6 +77,7 @@ export async function buildApp() {
       await v1.register(dealsRoutes);
       await v1.register(tasksRoutes);
       await v1.register(ticketsRoutes);
+      await v1.register(dashboardRoutes);
     },
     { prefix: '/api/v1' },
   );

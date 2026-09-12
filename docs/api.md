@@ -46,7 +46,8 @@ apps/api/src/
 │   ├── pipelines/                # read-only: pipelines + ordered stages
 │   ├── deals/                     # CRUD + move (Kanban drag-and-drop) + pipeline summary metrics
 │   ├── tasks/                      # CRUD + comments + unpaginated /board endpoint
-│   └── tickets/                     # CRUD + threaded conversation with internal notes
+│   ├── tickets/                     # CRUD + threaded conversation with internal notes
+│   └── dashboard/                    # KPI overview + chart series, gated by reports.read
 ```
 
 Each future module (customers, leads, deals, …) follows the `team` module's shape: a
@@ -101,6 +102,18 @@ preHandlers and a Zod schema for the response.
 | DELETE | `/api/v1/organizations/:organizationId/tickets/:ticketId`             | required | `tickets.delete`                    | Soft-delete — sets `deleted_at`                                                                                                   |
 | GET    | `/api/v1/organizations/:organizationId/tickets/:ticketId/messages`    | required | `tickets.read`                      | List the conversation, including internal notes (staff-only surface)                                                              |
 | POST   | `/api/v1/organizations/:organizationId/tickets/:ticketId/messages`    | required | `tickets.update`                    | Reply, or add an internal note with `isInternal: true`                                                                            |
+| GET    | `/api/v1/organizations/:organizationId/dashboard/overview`            | required | `reports.read`                      | KPI overview (revenue, pipeline value, won deals, conversion rate, new customers, open tasks) with period-over-period comparison  |
+| GET    | `/api/v1/organizations/:organizationId/dashboard/revenue`             | required | `reports.read`                      | Revenue over time, current vs. previous period                                                                                    |
+| GET    | `/api/v1/organizations/:organizationId/dashboard/pipeline-by-stage`   | required | `reports.read`                      | Open deal value and count grouped by pipeline stage (uses the organization's first pipeline)                                      |
+| GET    | `/api/v1/organizations/:organizationId/dashboard/won-lost`            | required | `reports.read`                      | Deals won vs. lost per day for the selected range                                                                                 |
+| GET    | `/api/v1/organizations/:organizationId/dashboard/lead-conversion`     | required | `reports.read`                      | Lead funnel counts by status (NEW/CONTACTED/QUALIFIED/CONVERTED) created within the range                                         |
+| GET    | `/api/v1/organizations/:organizationId/dashboard/sales-performance`   | required | `reports.read`                      | Won deal value and count grouped by owner, sorted descending by value                                                             |
+
+All `dashboard/*` endpoints accept the shared `DashboardQuery` querystring: `preset`
+(`7d` / `30d` / `90d` / `this_year` / `custom`, default `30d`), `from`/`to` (ISO date
+strings, used when `preset=custom`), and `compare` (boolean, default `false` — when
+true, KPIs and the revenue series also return the immediately preceding period of
+equal length for comparison).
 
 ## Adding a protected route
 
