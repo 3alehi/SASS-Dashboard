@@ -1,7 +1,10 @@
+import type { SearchEntityType, SearchResult } from '@nexora/shared';
 import {
   Building2,
   ClipboardList,
   Handshake,
+  LifeBuoy,
+  Loader2,
   Search,
   Settings,
   SunMoon,
@@ -11,15 +14,48 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { useGlobalSearch } from '@/hooks/use-global-search';
 import { cn } from '@/lib/utils';
 import { useUiStore } from '@/stores/ui-store';
 
 interface CommandAction {
   id: string;
   label: string;
-  group: 'Navigate' | 'Create' | 'Preferences';
+  subtitle?: string;
+  group: 'Search results' | 'Navigate' | 'Create' | 'Preferences';
   icon: typeof Search;
   run: () => void;
+}
+
+const ENTITY_ICON: Record<SearchEntityType, typeof Search> = {
+  customer: Building2,
+  lead: Target,
+  deal: Handshake,
+  task: ClipboardList,
+  ticket: LifeBuoy,
+};
+
+const ENTITY_LABEL: Record<SearchEntityType, string> = {
+  customer: 'Customer',
+  lead: 'Lead',
+  deal: 'Deal',
+  task: 'Task',
+  ticket: 'Ticket',
+};
+
+function entityHref(result: SearchResult): string {
+  switch (result.entityType) {
+    case 'customer':
+      return `/app/customers/${result.entityId}`;
+    case 'lead':
+      return `/app/leads/${result.entityId}`;
+    case 'deal':
+      return `/app/deals/${result.entityId}`;
+    case 'ticket':
+      return `/app/tickets/${result.entityId}`;
+    case 'task':
+      return '/app/tasks';
+  }
 }
 
 export function CommandPalette() {
@@ -30,6 +66,7 @@ export function CommandPalette() {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
+  const { data: searchResults, isFetching: isSearching } = useGlobalSearch(query);
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -106,10 +143,30 @@ export function CommandPalette() {
     [navigate, setTheme, theme],
   );
 
-  const filtered = useMemo(
+  const searchActions = useMemo<CommandAction[]>(
+    () =>
+      (searchResults ?? []).map((result) => ({
+        id: `search-${result.entityType}-${result.entityId}`,
+        label: result.title,
+        subtitle: result.subtitle || ENTITY_LABEL[result.entityType],
+        group: 'Search results',
+        icon: ENTITY_ICON[result.entityType],
+        run: () => navigate(entityHref(result)),
+      })),
+    [searchResults, navigate],
+  );
+
+  const filteredStaticActions = useMemo(
     () => actions.filter((action) => action.label.toLowerCase().includes(query.toLowerCase())),
     [actions, query],
   );
+
+  // With a query, lead with real matches (what the reader is looking for)
+  // and let static commands fall back below them; with no query, only the
+  // static command list makes sense — there is nothing to search yet.
+  const filtered = query.trim()
+    ? [...searchActions, ...filteredStaticActions]
+    : filteredStaticActions;
 
   function runAction(action: CommandAction) {
     action.run();
@@ -145,14 +202,18 @@ export function CommandPalette() {
             placeholder="Type a command or search…"
             className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
-          <kbd className="rounded border border-border px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
-            Esc
-          </kbd>
+          {isSearching ? (
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          ) : (
+            <kbd className="rounded border border-border px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+              Esc
+            </kbd>
+          )}
         </div>
         <div className="max-h-80 overflow-y-auto p-2">
           {filtered.length === 0 && (
             <p className="px-2 py-6 text-center text-sm text-muted-foreground">
-              No matching commands.
+              {query.trim() ? 'No matching results or commands.' : 'No matching commands.'}
             </p>
           )}
           {filtered.map((action, index) => {
@@ -168,9 +229,16 @@ export function CommandPalette() {
                   index === activeIndex ? 'bg-accent text-accent-foreground' : 'text-foreground',
                 )}
               >
-                <Icon className="h-4 w-4 text-muted-foreground" />
-                {action.label}
-                <span className="ml-auto text-xs text-muted-foreground">{action.group}</span>
+                <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <span className="min-w-0 flex-1 truncate">
+                  {action.label}
+                  {action.subtitle && (
+                    <span className="ml-1.5 text-xs text-muted-foreground">{action.subtitle}</span>
+                  )}
+                </span>
+                <span className="ml-auto shrink-0 text-xs text-muted-foreground">
+                  {action.group}
+                </span>
               </button>
             );
           })}

@@ -38,7 +38,9 @@ async function notifyAssignee(
     type: 'TASK_ASSIGNED',
     title: 'You were assigned a task',
     body: task.title,
-    link: `/app/tasks/${task.id}`,
+    // There is no /app/tasks/:id detail route — tasks open via a dialog
+    // from the list/board, so the link goes to the list itself.
+    link: '/app/tasks',
   });
 }
 

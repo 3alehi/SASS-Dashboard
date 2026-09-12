@@ -108,6 +108,10 @@ this column. Join/lookup tables and audit data do not use soft delete.
   and seeds default settings, subscription, and a starter sales pipeline, in one transaction.
 - `convert_lead(lead_id, create_deal, ...)` — converts a lead into a customer and primary contact
   (optionally a deal), while preserving the original lead row with `converted_customer_id` set.
+- `global_search(organization_id, query, limit)` — trigram-ranked search across customers, leads,
+  deals, tasks, and tickets in one round trip. Checks organization membership and, per entity
+  type, the matching `.read` permission itself, so a caller only ever sees rows they could already
+  fetch one-by-one.
 
 Both run as `security definer` because they write across multiple tenant-scoped tables in a single
 transaction; each independently re-checks the caller's permissions before writing.
