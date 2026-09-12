@@ -23,7 +23,7 @@ and committed before the next one starts. Branching follows Git Flow:
 | 15  | Audit logs                          | ✅ Done    |
 | 16  | Settings                            | ⏳ Planned |
 | 17  | Import/export                       | ⏳ Planned |
-| 18  | Landing page + pricing              | ⏳ Planned |
+| 18  | Landing page + pricing              | ✅ Done    |
 | 19  | Testing                             | ⏳ Planned |
 | 20  | Security audit                      | ⏳ Planned |
 | 21  | Performance optimization            | ⏳ Planned |
