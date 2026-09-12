@@ -144,6 +144,7 @@ export const dealsRoutes: FastifyPluginAsyncZod = async (app) => {
     '/organizations/:organizationId/deals',
     {
       preHandler: [app.authenticate, requirePermission('deals.create')],
+      config: { audit: { action: 'deal.create', entityType: 'deal' } },
       schema: {
         tags: ['deals'],
         summary: 'Create a deal',
@@ -163,6 +164,7 @@ export const dealsRoutes: FastifyPluginAsyncZod = async (app) => {
     '/organizations/:organizationId/deals/:dealId',
     {
       preHandler: [app.authenticate, requirePermission('deals.update')],
+      config: { audit: { action: 'deal.update', entityType: 'deal' } },
       schema: {
         tags: ['deals'],
         summary: 'Update a deal',
@@ -190,6 +192,7 @@ export const dealsRoutes: FastifyPluginAsyncZod = async (app) => {
     '/organizations/:organizationId/deals/:dealId/move',
     {
       preHandler: [app.authenticate, requirePermission('deals.update')],
+      config: { audit: { action: 'deal.move_stage', entityType: 'deal' } },
       schema: {
         tags: ['deals'],
         summary: 'Move a deal to a different stage (drag-and-drop on the Kanban board)',
@@ -221,6 +224,7 @@ export const dealsRoutes: FastifyPluginAsyncZod = async (app) => {
     '/organizations/:organizationId/deals/:dealId',
     {
       preHandler: [app.authenticate, requirePermission('deals.delete')],
+      config: { audit: { action: 'deal.delete', entityType: 'deal' } },
       schema: {
         tags: ['deals'],
         summary: 'Delete a deal',

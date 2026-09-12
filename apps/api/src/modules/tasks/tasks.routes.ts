@@ -152,6 +152,7 @@ export const tasksRoutes: FastifyPluginAsyncZod = async (app) => {
     '/organizations/:organizationId/tasks',
     {
       preHandler: [app.authenticate, requirePermission('tasks.create')],
+      config: { audit: { action: 'task.create', entityType: 'task' } },
       schema: {
         tags: ['tasks'],
         summary: 'Create a task',
@@ -172,6 +173,7 @@ export const tasksRoutes: FastifyPluginAsyncZod = async (app) => {
     '/organizations/:organizationId/tasks/:taskId',
     {
       preHandler: [app.authenticate, requirePermission('tasks.update')],
+      config: { audit: { action: 'task.update', entityType: 'task' } },
       schema: {
         tags: ['tasks'],
         summary: 'Update a task (status changes stamp/clear completed_at automatically)',
@@ -204,6 +206,7 @@ export const tasksRoutes: FastifyPluginAsyncZod = async (app) => {
     '/organizations/:organizationId/tasks/:taskId',
     {
       preHandler: [app.authenticate, requirePermission('tasks.delete')],
+      config: { audit: { action: 'task.delete', entityType: 'task' } },
       schema: {
         tags: ['tasks'],
         summary: 'Delete a task',

@@ -102,6 +102,7 @@ export const customersRoutes: FastifyPluginAsyncZod = async (app) => {
     '/organizations/:organizationId/customers',
     {
       preHandler: [app.authenticate, requirePermission('customers.create')],
+      config: { audit: { action: 'customer.create', entityType: 'customer' } },
       schema: {
         tags: ['customers'],
         summary: 'Create a customer',
@@ -121,6 +122,7 @@ export const customersRoutes: FastifyPluginAsyncZod = async (app) => {
     '/organizations/:organizationId/customers/:customerId',
     {
       preHandler: [app.authenticate, requirePermission('customers.update')],
+      config: { audit: { action: 'customer.update', entityType: 'customer' } },
       schema: {
         tags: ['customers'],
         summary: 'Update a customer',
@@ -148,6 +150,7 @@ export const customersRoutes: FastifyPluginAsyncZod = async (app) => {
     '/organizations/:organizationId/customers/:customerId',
     {
       preHandler: [app.authenticate, requirePermission('customers.delete')],
+      config: { audit: { action: 'customer.delete', entityType: 'customer' } },
       schema: {
         tags: ['customers'],
         summary: 'Archive (soft-delete) a customer',
@@ -174,6 +177,7 @@ export const customersRoutes: FastifyPluginAsyncZod = async (app) => {
     '/organizations/:organizationId/customers/:customerId/restore',
     {
       preHandler: [app.authenticate, requirePermission('customers.update')],
+      config: { audit: { action: 'customer.restore', entityType: 'customer' } },
       schema: {
         tags: ['customers'],
         summary: 'Restore an archived customer',

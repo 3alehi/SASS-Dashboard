@@ -53,6 +53,7 @@ export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
     '/organizations/:organizationId/team/invite',
     {
       preHandler: [app.authenticate, requirePermission('team.manage')],
+      config: { audit: { action: 'team_member.invite', entityType: 'team_member' } },
       schema: {
         tags: ['team'],
         summary: 'Invite a new team member by email (sends a real invitation via Supabase Auth)',
@@ -82,6 +83,7 @@ export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
     '/organizations/:organizationId/team/:memberId/role',
     {
       preHandler: [app.authenticate, requirePermission('team.manage')],
+      config: { audit: { action: 'team_member.role_change', entityType: 'team_member' } },
       schema: {
         tags: ['team'],
         summary: "Change a member's role (OWNER is not assignable through this endpoint)",
@@ -124,6 +126,7 @@ export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
     '/organizations/:organizationId/team/:memberId/deactivate',
     {
       preHandler: [app.authenticate, requirePermission('team.manage')],
+      config: { audit: { action: 'team_member.deactivate', entityType: 'team_member' } },
       schema: {
         tags: ['team'],
         summary: 'Deactivate a team member (revokes access without deleting their history)',
@@ -161,6 +164,7 @@ export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
     '/organizations/:organizationId/team/:memberId/reactivate',
     {
       preHandler: [app.authenticate, requirePermission('team.manage')],
+      config: { audit: { action: 'team_member.reactivate', entityType: 'team_member' } },
       schema: {
         tags: ['team'],
         summary: 'Reactivate a deactivated team member',
@@ -187,6 +191,7 @@ export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
     '/organizations/:organizationId/team/:memberId',
     {
       preHandler: [app.authenticate, requirePermission('team.manage')],
+      config: { audit: { action: 'team_member.remove', entityType: 'team_member' } },
       schema: {
         tags: ['team'],
         summary: 'Remove a team member from the organization',

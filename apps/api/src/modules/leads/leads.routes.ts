@@ -105,6 +105,7 @@ export const leadsRoutes: FastifyPluginAsyncZod = async (app) => {
     '/organizations/:organizationId/leads',
     {
       preHandler: [app.authenticate, requirePermission('leads.create')],
+      config: { audit: { action: 'lead.create', entityType: 'lead' } },
       schema: {
         tags: ['leads'],
         summary: 'Create a lead',
@@ -124,6 +125,7 @@ export const leadsRoutes: FastifyPluginAsyncZod = async (app) => {
     '/organizations/:organizationId/leads/:leadId',
     {
       preHandler: [app.authenticate, requirePermission('leads.update')],
+      config: { audit: { action: 'lead.update', entityType: 'lead' } },
       schema: {
         tags: ['leads'],
         summary: 'Update a lead',
@@ -151,6 +153,7 @@ export const leadsRoutes: FastifyPluginAsyncZod = async (app) => {
     '/organizations/:organizationId/leads/:leadId',
     {
       preHandler: [app.authenticate, requirePermission('leads.delete')],
+      config: { audit: { action: 'lead.delete', entityType: 'lead' } },
       schema: {
         tags: ['leads'],
         summary: 'Delete a lead',
@@ -177,6 +180,7 @@ export const leadsRoutes: FastifyPluginAsyncZod = async (app) => {
     '/organizations/:organizationId/leads/:leadId/convert',
     {
       preHandler: [app.authenticate, requireAllPermissions(['leads.update', 'customers.create'])],
+      config: { audit: { action: 'lead.convert', entityType: 'lead' } },
       schema: {
         tags: ['leads'],
         summary:
