@@ -28,7 +28,7 @@ and committed before the next one starts. Branching follows Git Flow:
 | 20  | Security audit                      | ⏳ Planned |
 | 21  | Performance optimization            | ⏳ Planned |
 | 22  | Docker                              | ⏳ Planned |
-| 23  | CI/CD                               | ⏳ Planned |
+| 23  | CI/CD                               | ✅ Done    |
 | 24  | Documentation                       | ⏳ Planned |
 | 25  | Final production polish             | ⏳ Planned |
 
