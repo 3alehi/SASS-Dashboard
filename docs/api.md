@@ -48,7 +48,8 @@ apps/api/src/
 │   ├── tasks/                      # CRUD + comments + unpaginated /board endpoint
 │   ├── tickets/                     # CRUD + threaded conversation with internal notes
 │   ├── dashboard/                    # KPI overview + chart series, gated by reports.read
-│   └── notifications/                 # Per-user notification inbox, delivered live via Supabase Realtime
+│   ├── notifications/                 # Per-user notification inbox, delivered live via Supabase Realtime
+│   └── search/                         # Global search across customers/leads/deals/tasks/tickets
 ```
 
 Each future module (customers, leads, deals, …) follows the `team` module's shape: a
@@ -129,6 +130,13 @@ so there is nothing an additional permission check would protect. New notificati
 arrive in the frontend via a Supabase Realtime subscription (see
 [database.md](./database.md#realtime)) rather than polling; the unread-count and list
 endpoints back the initial render and the full notifications page.
+
+| GET | `/api/v1/organizations/:organizationId/search` | required | — | Ranked search across customers, leads, deals, tasks, and tickets (`q`, `limit`, default 8) |
+
+`search` has no `requirePermission()` gate beyond authentication either — the
+`global_search()` Postgres function it calls checks organization membership and, per
+entity type, the matching `.read` permission itself, so a caller without e.g.
+`leads.read` simply never sees lead rows in the result set.
 
 ## Adding a protected route
 
