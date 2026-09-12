@@ -1,10 +1,8 @@
-import { Bell, Menu, Search } from 'lucide-react';
+import { Menu, Search } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
+import { NotificationBell } from '@/components/layout/notification-bell';
 import { Button } from '@/components/ui/button';
 import { useUiStore } from '@/stores/ui-store';
-
-const MOCK_UNREAD_NOTIFICATIONS = 3;
 
 export function Topbar() {
   const setMobileNavOpen = useUiStore((state) => state.setMobileNavOpen);
@@ -37,17 +35,7 @@ export function Topbar() {
       </button>
 
       <div className="ml-auto flex items-center gap-1">
-        <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
-          <Bell />
-          {MOCK_UNREAD_NOTIFICATIONS > 0 && (
-            <Badge
-              variant="destructive"
-              className="absolute -right-0.5 -top-0.5 h-4 min-w-4 justify-center rounded-full px-1 text-[10px]"
-            >
-              {MOCK_UNREAD_NOTIFICATIONS}
-            </Badge>
-          )}
-        </Button>
+        <NotificationBell />
       </div>
     </header>
   );

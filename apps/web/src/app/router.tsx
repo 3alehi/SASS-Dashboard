@@ -20,6 +20,7 @@ import { LandingPage } from '@/pages/landing-page';
 import { LeadDetailPage } from '@/pages/lead-detail-page';
 import { LeadsPage } from '@/pages/leads-page';
 import { NotFoundPage } from '@/pages/not-found-page';
+import { NotificationsPage } from '@/pages/notifications-page';
 import { PipelinePage } from '@/pages/pipeline-page';
 import { ReportsPage } from '@/pages/reports-page';
 import { AppearanceSettingsPage } from '@/pages/settings/appearance-settings-page';
@@ -92,6 +93,7 @@ export const router = createBrowserRouter([
       { path: 'tasks', element: <TasksPage /> },
       { path: 'tickets', element: <TicketsPage /> },
       { path: 'tickets/:id', element: <TicketDetailPage /> },
+      { path: 'notifications', element: <NotificationsPage /> },
       {
         path: 'reports',
         element: (
