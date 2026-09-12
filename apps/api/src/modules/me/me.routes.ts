@@ -1,7 +1,12 @@
+import { notificationPreferencesSchema, updateNotificationPreferencesSchema } from '@nexora/shared';
 import type { FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
 
 import { supabaseAdmin } from '@/lib/supabase-admin.js';
+import {
+  getNotificationPreferences,
+  updateNotificationPreferences,
+} from '@/modules/me/notification-preferences.repository.js';
 
 const membershipSchema = z.object({
   organizationId: z.string().uuid(),
@@ -86,6 +91,43 @@ export const meRoutes: FastifyPluginAsync = async (app) => {
         success: true,
         data: { id: request.user.id, email: request.user.email ?? null, organizations },
       };
+    },
+  );
+
+  app.get(
+    '/me/notification-preferences',
+    {
+      preHandler: app.authenticate,
+      schema: {
+        tags: ['me'],
+        summary: "Get the current user's notification preferences (defaults to all enabled)",
+        response: {
+          200: z.object({ success: z.literal(true), data: notificationPreferencesSchema }),
+        },
+      },
+    },
+    async (request) => {
+      const data = await getNotificationPreferences(request.user.id);
+      return { success: true, data };
+    },
+  );
+
+  app.patch(
+    '/me/notification-preferences',
+    {
+      preHandler: app.authenticate,
+      schema: {
+        tags: ['me'],
+        summary: "Update the current user's notification preferences (partial)",
+        response: {
+          200: z.object({ success: z.literal(true), data: notificationPreferencesSchema }),
+        },
+      },
+    },
+    async (request) => {
+      const input = updateNotificationPreferencesSchema.parse(request.body);
+      const data = await updateNotificationPreferences(request.user.id, input);
+      return { success: true, data };
     },
   );
 };

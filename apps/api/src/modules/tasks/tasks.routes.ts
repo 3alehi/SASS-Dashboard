@@ -9,6 +9,8 @@ import {
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 
+import { getNotificationPreferences } from '@/modules/me/notification-preferences.repository.js';
+import { createNotification } from '@/modules/notifications/notifications.repository.js';
 import { requirePermission } from '@/modules/rbac/require-permission.js';
 import { createTaskComment, listTaskComments } from '@/modules/tasks/task-comments.repository.js';
 import {
@@ -19,6 +21,26 @@ import {
   softDeleteTask,
   updateTask,
 } from '@/modules/tasks/tasks.repository.js';
+
+async function notifyAssignee(
+  organizationId: string,
+  task: { assigneeId: string | null; title: string; id: string },
+  assignedBy: string,
+) {
+  if (!task.assigneeId || task.assigneeId === assignedBy) return;
+
+  const preferences = await getNotificationPreferences(task.assigneeId);
+  if (!preferences.taskAssigned) return;
+
+  await createNotification({
+    organizationId,
+    userId: task.assigneeId,
+    type: 'TASK_ASSIGNED',
+    title: 'You were assigned a task',
+    body: task.title,
+    link: `/app/tasks/${task.id}`,
+  });
+}
 
 const paramsSchema = z.object({ organizationId: z.string().uuid() });
 const taskParamsSchema = paramsSchema.extend({ taskId: z.string().uuid() });
@@ -139,6 +161,7 @@ export const tasksRoutes: FastifyPluginAsyncZod = async (app) => {
     async (request, reply) => {
       const { organizationId } = request.params;
       const task = await createTask(organizationId, request.user.id, request.body);
+      await notifyAssignee(organizationId, task, request.user.id);
       return reply.code(201).send({ success: true as const, data: task });
     },
   );
@@ -157,6 +180,7 @@ export const tasksRoutes: FastifyPluginAsyncZod = async (app) => {
     },
     async (request, reply) => {
       const { organizationId, taskId } = request.params;
+      const previousAssigneeId = (await getTaskById(organizationId, taskId))?.assigneeId ?? null;
       const task = await updateTask(organizationId, taskId, request.body);
 
       if (!task) {
@@ -164,6 +188,10 @@ export const tasksRoutes: FastifyPluginAsyncZod = async (app) => {
           success: false as const,
           error: { code: 'NOT_FOUND', message: 'Task not found.' },
         });
+      }
+
+      if (task.assigneeId !== previousAssigneeId) {
+        await notifyAssignee(organizationId, task, request.user.id);
       }
 
       return { success: true as const, data: task };

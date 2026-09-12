@@ -49,6 +49,23 @@ describe('app', () => {
     expect(response.statusCode).toBe(401);
   });
 
+  it('GET /api/v1/me/notification-preferences returns 401 without authentication', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/v1/me/notification-preferences',
+    });
+    expect(response.statusCode).toBe(401);
+  });
+
+  it('PATCH /api/v1/me/notification-preferences returns 401 without authentication', async () => {
+    const response = await app.inject({
+      method: 'PATCH',
+      url: '/api/v1/me/notification-preferences',
+      payload: { taskAssigned: false },
+    });
+    expect(response.statusCode).toBe(401);
+  });
+
   it('GET /api/v1/organizations/:organizationId/team returns 401 without authentication', async () => {
     const response = await app.inject({
       method: 'GET',

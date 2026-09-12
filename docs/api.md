@@ -47,7 +47,8 @@ apps/api/src/
 │   ├── deals/                     # CRUD + move (Kanban drag-and-drop) + pipeline summary metrics
 │   ├── tasks/                      # CRUD + comments + unpaginated /board endpoint
 │   ├── tickets/                     # CRUD + threaded conversation with internal notes
-│   └── dashboard/                    # KPI overview + chart series, gated by reports.read
+│   ├── dashboard/                    # KPI overview + chart series, gated by reports.read
+│   └── notifications/                 # Per-user notification inbox, delivered live via Supabase Realtime
 ```
 
 Each future module (customers, leads, deals, …) follows the `team` module's shape: a
@@ -60,6 +61,8 @@ preHandlers and a Zod schema for the response.
 | ------ | --------------------------------------------------------------------- | -------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | GET    | `/api/v1/health`                                                      | none     | —                                   | Liveness check                                                                                                                    |
 | GET    | `/api/v1/me`                                                          | required | —                                   | Returns the caller's organizations, roles, and permissions                                                                        |
+| GET    | `/api/v1/me/notification-preferences`                                 | required | —                                   | The caller's per-type in-app notification toggles (defaults to all enabled)                                                       |
+| PATCH  | `/api/v1/me/notification-preferences`                                 | required | —                                   | Partial update of the caller's notification preferences                                                                           |
 | GET    | `/api/v1/organizations/:organizationId/team`                          | required | `team.manage`                       | List organization members                                                                                                         |
 | POST   | `/api/v1/organizations/:organizationId/team/invite`                   | required | `team.manage`                       | Invite a member by email (sends a real invite via Supabase Auth); OWNER is not an assignable role here                            |
 | PATCH  | `/api/v1/organizations/:organizationId/team/:memberId/role`           | required | `team.manage`                       | Change a member's role; refuses to demote an organization's only active OWNER                                                     |
@@ -114,6 +117,18 @@ All `dashboard/*` endpoints accept the shared `DashboardQuery` querystring: `pre
 strings, used when `preset=custom`), and `compare` (boolean, default `false` — when
 true, KPIs and the revenue series also return the immediately preceding period of
 equal length for comparison).
+
+| GET | `/api/v1/organizations/:organizationId/notifications` | required | — | Paginated list of the caller's own notifications (`unreadOnly` filter) |
+| GET | `/api/v1/organizations/:organizationId/notifications/unread-count` | required | — | Unread count for the caller, polled by the bell badge as a fallback and read on mount |
+| POST | `/api/v1/organizations/:organizationId/notifications/read-all` | required | — | Marks every one of the caller's notifications as read |
+| POST | `/api/v1/organizations/:organizationId/notifications/:notificationId/read` | required | — | Marks a single notification as read |
+
+`notifications/*` routes have no permission gate beyond authentication — every query
+already filters by `request.user.id`, matching the notifications table's RLS policies,
+so there is nothing an additional permission check would protect. New notifications
+arrive in the frontend via a Supabase Realtime subscription (see
+[database.md](./database.md#realtime)) rather than polling; the unread-count and list
+endpoints back the initial render and the full notifications page.
 
 ## Adding a protected route
 
