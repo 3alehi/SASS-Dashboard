@@ -9,6 +9,7 @@ import {
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 
+import { getNotificationPreferences } from '@/modules/me/notification-preferences.repository.js';
 import { createNotification } from '@/modules/notifications/notifications.repository.js';
 import { requirePermission } from '@/modules/rbac/require-permission.js';
 import { createTaskComment, listTaskComments } from '@/modules/tasks/task-comments.repository.js';
@@ -27,6 +28,9 @@ async function notifyAssignee(
   assignedBy: string,
 ) {
   if (!task.assigneeId || task.assigneeId === assignedBy) return;
+
+  const preferences = await getNotificationPreferences(task.assigneeId);
+  if (!preferences.taskAssigned) return;
 
   await createNotification({
     organizationId,
