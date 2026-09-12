@@ -20,6 +20,7 @@ import { leadsRoutes } from '@/modules/leads/leads.routes.js';
 import { meRoutes } from '@/modules/me/me.routes.js';
 import { notificationsRoutes } from '@/modules/notifications/notifications.routes.js';
 import { pipelinesRoutes } from '@/modules/pipelines/pipelines.routes.js';
+import { searchRoutes } from '@/modules/search/search.routes.js';
 import { tasksRoutes } from '@/modules/tasks/tasks.routes.js';
 import { teamRoutes } from '@/modules/team/team.routes.js';
 import { ticketsRoutes } from '@/modules/tickets/tickets.routes.js';
@@ -80,6 +81,7 @@ export async function buildApp() {
       await v1.register(ticketsRoutes);
       await v1.register(dashboardRoutes);
       await v1.register(notificationsRoutes);
+      await v1.register(searchRoutes);
     },
     { prefix: '/api/v1' },
   );
