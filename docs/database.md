@@ -91,7 +91,7 @@ erDiagram
 | `audit_logs`                             | Append-only activity trail. No update/delete policy exists for any role.                                                                        |
 | `tags`, `entity_tags`                    | Shared tagging, polymorphically attached to customers/leads/deals/tasks/tickets.                                                                |
 | `saved_filters`, `dashboard_widgets`     | Per-user (optionally org-shared) saved views and dashboard layout.                                                                              |
-| `user_preferences`                       | Per-user theme and active-organization state.                                                                                                   |
+| `user_preferences`                       | Per-user theme, active-organization state, and `notification_settings` (per-type in-app notification toggles).                                  |
 | `organization_settings`                  | Org-level configuration (currency, date format, branding).                                                                                      |
 | `subscriptions`                          | Plan and billing status per organization.                                                                                                       |
 
@@ -111,3 +111,13 @@ this column. Join/lookup tables and audit data do not use soft delete.
 
 Both run as `security definer` because they write across multiple tenant-scoped tables in a single
 transaction; each independently re-checks the caller's permissions before writing.
+
+## Realtime
+
+The `notifications` table is added to the `supabase_realtime` publication
+([`0014_notifications_realtime.sql`](../database/migrations/0014_notifications_realtime.sql)) so
+the frontend can subscribe to new rows via Supabase Realtime instead of polling. Supabase enforces
+the same Row Level Security policies on `postgres_changes` subscriptions as on regular queries, so
+a client can only ever receive its own (`user_id = auth.uid()`) notification inserts — adding the
+table to the publication does not widen who can see a row, it only adds live delivery on top of
+the existing per-user read policy.
