@@ -5,6 +5,11 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   plugins: [react()],
+  // A single .env at the repo root serves both apps/web and apps/api,
+  // matching .env.example — without this Vite only ever looks in its own
+  // package directory and silently falls back to the placeholder Supabase
+  // client, which fails DNS resolution at runtime.
+  envDir: path.resolve(__dirname, '../..'),
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
