@@ -21,7 +21,7 @@ and committed before the next one starts. Branching follows Git Flow:
 | 13  | Notifications + realtime            | ✅ Done    |
 | 14  | Global search + command palette     | ✅ Done    |
 | 15  | Audit logs                          | ✅ Done    |
-| 16  | Settings                            | ⏳ Planned |
+| 16  | Settings                            | ✅ Done    |
 | 17  | Import/export                       | ⏳ Planned |
 | 18  | Landing page + pricing              | ⏳ Planned |
 | 19  | Testing                             | ⏳ Planned |
