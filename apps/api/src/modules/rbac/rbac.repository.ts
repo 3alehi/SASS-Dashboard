@@ -1,3 +1,5 @@
+import type { RoleMatrix } from '@nexora/shared';
+
 import { supabaseAdmin } from '@/lib/supabase-admin.js';
 
 export interface OrganizationMembership {
@@ -66,4 +68,48 @@ export async function getRolePermissions(roleId: number): Promise<Set<string>> {
   });
 
   return new Set(keys.filter(Boolean));
+}
+
+/**
+ * Returns the full role -> permissions matrix, straight from role_permissions
+ * (the same table that backs has_permission() in Postgres). This is a
+ * read-only reference view for the Settings > Roles & Permissions page —
+ * roles and their grants are fixed system data, not editable through the
+ * API, so there is no corresponding write endpoint.
+ */
+export async function getRoleMatrix(): Promise<RoleMatrix> {
+  const { data: roles, error: rolesError } = await supabaseAdmin
+    .from('roles')
+    .select('id, name')
+    .order('id', { ascending: true });
+
+  if (rolesError || !roles) return [];
+
+  const { data: grants, error: grantsError } = await supabaseAdmin
+    .from('role_permissions')
+    .select('role_id, permissions!inner(key)');
+
+  if (grantsError || !grants) {
+    return roles.map((role) => ({
+      role: role.name as RoleMatrix[number]['role'],
+      permissions: [],
+    }));
+  }
+
+  const permissionsByRole = new Map<number, string[]>();
+  for (const grant of grants) {
+    const permission = Array.isArray(grant.permissions)
+      ? grant.permissions[0]
+      : (grant.permissions as { key: string } | null);
+    if (!permission) continue;
+    const list = permissionsByRole.get(grant.role_id as number) ?? [];
+    list.push(permission.key);
+    permissionsByRole.set(grant.role_id as number, list);
+  }
+
+  return roles.map((role) => ({
+    role: role.name as RoleMatrix[number]['role'],
+    permissions: (permissionsByRole.get(role.id as number) ??
+      []) as RoleMatrix[number]['permissions'],
+  }));
 }

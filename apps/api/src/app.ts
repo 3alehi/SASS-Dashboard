@@ -20,7 +20,9 @@ import { healthRoutes } from '@/modules/health/health.routes.js';
 import { leadsRoutes } from '@/modules/leads/leads.routes.js';
 import { meRoutes } from '@/modules/me/me.routes.js';
 import { notificationsRoutes } from '@/modules/notifications/notifications.routes.js';
+import { organizationRoutes } from '@/modules/organization/organization.routes.js';
 import { pipelinesRoutes } from '@/modules/pipelines/pipelines.routes.js';
+import { rbacRoutes } from '@/modules/rbac/rbac.routes.js';
 import { searchRoutes } from '@/modules/search/search.routes.js';
 import { tasksRoutes } from '@/modules/tasks/tasks.routes.js';
 import { teamRoutes } from '@/modules/team/team.routes.js';
@@ -86,6 +88,8 @@ export async function buildApp() {
       await v1.register(notificationsRoutes);
       await v1.register(searchRoutes);
       await v1.register(auditLogRoutes);
+      await v1.register(organizationRoutes);
+      await v1.register(rbacRoutes);
     },
     { prefix: '/api/v1' },
   );

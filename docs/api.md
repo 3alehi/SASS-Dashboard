@@ -50,7 +50,8 @@ apps/api/src/
 │   ├── dashboard/                    # KPI overview + chart series, gated by reports.read
 │   ├── notifications/                 # Per-user notification inbox, delivered live via Supabase Realtime
 │   ├── search/                         # Global search across customers/leads/deals/tasks/tickets
-│   └── audit/                           # Audit log plugin + list endpoint, gated by settings.manage
+│   ├── audit/                           # Audit log plugin + list endpoint, gated by settings.manage
+│   └── organization/                     # Organization profile + settings, gated by settings.manage
 ```
 
 Each future module (customers, leads, deals, …) follows the `team` module's shape: a
@@ -172,6 +173,20 @@ resolving the entity id from the route's `:xId` param for update/delete, or from
 adding the config is the only step, and a failed write is never logged as having
 happened. High-frequency, conversational writes (task comments, ticket messages) are
 deliberately excluded — audit logs record discrete business events, not chat.
+
+| Method | Path                                             | Auth     | Permission        | Notes                                                                       |
+| ------ | ------------------------------------------------ | -------- | ----------------- | --------------------------------------------------------------------------- |
+| GET    | `/api/v1/organizations/:organizationId`          | required | `settings.manage` | Organization profile (name, industry, size, website, billing email, logo)   |
+| PATCH  | `/api/v1/organizations/:organizationId`          | required | `settings.manage` | Partial update of organization profile                                      |
+| GET    | `/api/v1/organizations/:organizationId/settings` | required | `settings.manage` | Organization preferences (default currency, fiscal year start, date format) |
+| PATCH  | `/api/v1/organizations/:organizationId/settings` | required | `settings.manage` | Partial update of organization preferences                                  |
+| GET    | `/api/v1/organizations/:organizationId/roles`    | required | `settings.manage` | Every system role and the permissions it grants — read-only reference view  |
+
+Roles and their permission grants are fixed system data, seeded once in
+`role_permissions` (see [`0002_tenancy_and_rbac.sql`](../database/migrations/0002_tenancy_and_rbac.sql))
+and are not editable through the API — there is no corresponding write endpoint. The
+Settings → Roles & Permissions page in the frontend renders this matrix purely as a
+reference so an admin can see what each role can do.
 
 ## Adding a protected route
 
