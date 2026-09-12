@@ -1,0 +1,38 @@
+# Dependencies (installed fresh in the build stage)
+**/node_modules
+
+# Build output (rebuilt inside the image)
+**/dist
+**/build
+**/coverage
+**/.vite
+
+# Version control / IDE / OS cruft
+.git
+.gitignore
+.gitattributes
+.vscode
+.idea
+*.swp
+.DS_Store
+Thumbs.db
+
+# Env files — real secrets must never be baked into an image; env vars are
+# injected at container runtime (or as build args for the web image).
+.env
+.env.*
+!.env.example
+
+# Logs
+npm-debug.log*
+*.log
+
+# Docker files themselves (no need to send into build context)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Docs / misc
+docs
+README.md
+*.md

@@ -1,0 +1,37 @@
+# Local full-stack container testing.
+#
+# Both services talk to a hosted Supabase project — there is no local
+# Postgres service here on purpose. This repo's database migrations
+# (database/migrations/*.sql) are plain SQL meant to be applied to a
+# Supabase project, not to a locally-run Postgres container.
+#
+# Usage:
+#   cp .env.example .env   # then fill in real Supabase/JWT values
+#   docker compose up --build
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    image: nexora-api:local
+    env_file:
+      - .env
+    ports:
+      - '4000:4000'
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+    image: nexora-web:local
+    ports:
+      - '8080:80'
+    depends_on:
+      - api
+    restart: unless-stopped
