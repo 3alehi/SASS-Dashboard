@@ -18,6 +18,7 @@ import { dealsRoutes } from '@/modules/deals/deals.routes.js';
 import { healthRoutes } from '@/modules/health/health.routes.js';
 import { leadsRoutes } from '@/modules/leads/leads.routes.js';
 import { meRoutes } from '@/modules/me/me.routes.js';
+import { notificationsRoutes } from '@/modules/notifications/notifications.routes.js';
 import { pipelinesRoutes } from '@/modules/pipelines/pipelines.routes.js';
 import { tasksRoutes } from '@/modules/tasks/tasks.routes.js';
 import { teamRoutes } from '@/modules/team/team.routes.js';
@@ -78,6 +79,7 @@ export async function buildApp() {
       await v1.register(tasksRoutes);
       await v1.register(ticketsRoutes);
       await v1.register(dashboardRoutes);
+      await v1.register(notificationsRoutes);
     },
     { prefix: '/api/v1' },
   );
