@@ -17,6 +17,7 @@ import { customersRoutes } from '@/modules/customers/customers.routes.js';
 import { dashboardRoutes } from '@/modules/dashboard/dashboard.routes.js';
 import { dealsRoutes } from '@/modules/deals/deals.routes.js';
 import { healthRoutes } from '@/modules/health/health.routes.js';
+import { importExportRoutes } from '@/modules/import-export/import-export.routes.js';
 import { leadsRoutes } from '@/modules/leads/leads.routes.js';
 import { meRoutes } from '@/modules/me/me.routes.js';
 import { notificationsRoutes } from '@/modules/notifications/notifications.routes.js';
@@ -90,6 +91,7 @@ export async function buildApp() {
       await v1.register(auditLogRoutes);
       await v1.register(organizationRoutes);
       await v1.register(rbacRoutes);
+      await v1.register(importExportRoutes);
     },
     { prefix: '/api/v1' },
   );

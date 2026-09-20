@@ -14,3 +14,4 @@ export * from './schemas/search.js';
 export * from './schemas/audit-log.js';
 export * from './schemas/organization.js';
 export * from './schemas/role-matrix.js';
+export * from './schemas/import-export.js';
